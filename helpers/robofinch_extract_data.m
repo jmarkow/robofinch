@@ -41,6 +41,8 @@ end
 % return structure with all variables to carry 
 % over to the clustered file
 
+y2=[];
+
 for i=1:length(EXT_PTS)
 
 	% check for extraction points in each file, if we find some, save to cluster_dir
