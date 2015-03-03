@@ -16,7 +16,7 @@ if mod(nparams,2)>0
 end
 
 max_depth=5; % how many levels of sub-directories to search through
-max_date=4;
+max_date=inf;
 file_ext='auto'; % automatically determine file type
 filename_filter='songdet1*.mat';
 filename_exclude={}; % anything to exclude

@@ -16,24 +16,14 @@ if mod(nparams,2)>0
 end
 
 max_depth=7; % how many levels of sub-directories to search through
-max_date=4;
-file_ext='auto'; % automatically determine file type
-filename_filter='songdet1*.mat';
-filename_exclude={}; % anything to exclude
+max_date=inf;
 
 % sound scoring parameters, make sure these match your template
 
-score_dir='syllable_data'; %
-score_ext='_score'; % 
-
 parameter_file='robofinch_parameters.txt';
-
-recurse_files(1).field='config';
-recurse_files(1).filename=parameter_file;
-
-%clust_dir_ext='_roboextract'; % add to cluster directory so we know it's been auto-clustered
-
 clust_ext='roboextract';
+extract_dir='roboaggregate';
+extract_file='roboaggregate.mat';
 
 % scan for intan_frontend files, prefix songdet1
 
@@ -49,10 +39,6 @@ for i=1:2:nparams
 			exclude=varargin{i+1};
 		case 'recurse_files'
 			recurse_files=varargin{i+1};
-		case 'data_load'
-			data_load=varargin{i+1};
-		case 'audio_load'
-			audio_load=varargin{i+1};
 	end
 end
 
@@ -69,15 +55,68 @@ all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date);
 
 first_dir=cell(1,length(all_files));
 for i=1:length(all_files)
-	tokens=regexp(all_files(i).name,filesep,'split');
-	ntokens=length(regexp(DIR,filesep,'split')); % first token after DIR
-	first_dir{i}=tokens{ntokens+1};
+	[pathname,filename,ext]=fileparts(all_files(i).name);
+	first_dir{i}=pathname;
 end
 
-[uniq_dirs,~,uniq_idx]=unique(first_dir)
+% with the directories, determine which ones to aggregate
+
+[uniq_dirs,~,uniq_idx]=unique(first_dir);
 
 for i=1:length(uniq_dirs)
-	uniq_dirs{i}
+
+	% within each directory, load the first file, these variables will be used to bootstrap the process
+	
+	% load the first file
+	
+	output_dir=fullfile(uniq_dirs{i},extract_dir);
+	
+	if exist(fullfile(output_dir,extract_file),'file')
+		continue;
+	end
+
+	disp(['Aggregating directory:  ' uniq_dirs{i}]);
+
+	curr_batch=all_files(uniq_idx==i);
+	nfiles=length(curr_batch);
+
+	template_data=load(curr_batch(1).name);
+	
+	% prepare the aggregated data
+
+	[agg,data_type]=robofinch_prepare_agg(template_data,nfiles);	
+
+	to_del=zeros(1,nfiles);
+
+	% map new data to agg data
+
+	reverse_string='';
+	
+	for j=1:nfiles
+
+		% text progress bar
+
+		percent_complete=100 * (j/nfiles);
+		msg=sprintf('Percent done: %3.1f',percent_complete);
+		fprintf([reverse_string,msg]);
+		reverse_string=repmat(sprintf('\b'),1,length(msg));
+
+		% actual data aggregation
+
+		new_data=load(curr_batch(j).name);
+		[agg,to_del(j)]=robofinch_add_data(agg,data_type,new_data,j);
+	end
+
+	fprintf('\n');
+	disp([ num2str(sum(to_del)) ' errors']);
+
+	
+	if ~exist(output_dir,'dir')
+		mkdir(output_dir);
+	end
+
+	save(fullfile(output_dir,extract_file),'-struct','agg');
+
 end
 
 
