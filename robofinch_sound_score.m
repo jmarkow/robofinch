@@ -16,6 +16,7 @@ if mod(nparams,2)>0
 end
 
 max_depth=6; % how many levels of sub-directories to search through
+max_date=inf;
 file_ext='auto'; % automatically determine file type
 filename_filter='songdet1*.mat';
 filename_exclude={}; % anything to exclude
@@ -26,7 +27,7 @@ len=34;
 overlap=33;
 downsampling=5;
 song_band=[3e3 9e3];
-norm_amp=1;
+norm_amp=0;
 filter_scale=10;
 spec_sigma=1.5;
 
@@ -44,7 +45,6 @@ recurse_files(1).filename='robofinch_parameters.txt';
 audio_load='';
 
 % scan for intan_frontend files, prefix songdet1
-
 
 for i=1:2:nparams
 	switch lower(varargin{i})
@@ -101,8 +101,9 @@ default_params=struct('len',len,'overlap',overlap,'downsampling',downsampling,'s
 %template_listing=robofinch_get_templates(listing{i},template_file,classify_file);
 
 % recurse the directory 
+% TODO: prevent recursion in old directories
 
-all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,recurse_files);
+all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,recurse_files);
 
 % which files need to be processed?
 
@@ -148,9 +149,9 @@ for i=1:nconfigs
 		end
 	end
 
-	if isempty(audio_load)
-		error('Need audio loading function to continue...');
-	end
+	%if isempty(audio_load)
+	%	error('Need audio loading function to continue...');
+	%end
 
 	% score the files
 

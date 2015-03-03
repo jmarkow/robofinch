@@ -10,14 +10,14 @@ for i=1:length(PARAM_NAMES)
 		idx=find(~cellfun(@isempty,strfind(tmp,PARAM_NAMES{i})));
 
 		if isempty(idx)
-			check=0;
+			CHECK=0;
 			break;
 		end
 
 		flag=all(PARAMS2.(tmp{idx})==PARAMS1.(PARAM_NAMES{i}));
 
 		if ~flag
-			check=0;
+			CHECK=0;
 			break;
 		end
 	end
