@@ -24,6 +24,7 @@ parameter_file='robofinch_parameters.txt';
 clust_ext='roboextract';
 extract_dir='roboaggregate';
 extract_file='roboaggregate.mat';
+change_file='robofinch_fileadd';
 
 % scan for intan_frontend files, prefix songdet1
 
@@ -71,7 +72,9 @@ for i=1:length(uniq_dirs)
 	
 	output_dir=fullfile(uniq_dirs{i},extract_dir);
 	
-	if exist(fullfile(output_dir,extract_file),'file')
+	% if nothing has changed and we already processed, skip...
+
+	if ~exist(fullfile(uniq_dirs{i},'..',change_file),'file') & exist(fullfile(output_dir,extract_file),'file')
 		continue;
 	end
 
@@ -109,13 +112,21 @@ for i=1:length(uniq_dirs)
 
 	fprintf('\n');
 	disp([ num2str(sum(to_del)) ' errors']);
-
 	
 	if ~exist(output_dir,'dir')
 		mkdir(output_dir);
 	end
 
+	% now remove the change_file 
+
+	if exist(fullfile(uniq_dirs{i},'..',change_file),'file')
+		delete(fullfile(uniq_dirs{i},'..',change_file));
+	end
+
 	save(fullfile(output_dir,extract_file),'-struct','agg');
+
+
+
 
 end
 

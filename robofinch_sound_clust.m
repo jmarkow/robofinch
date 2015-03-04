@@ -49,6 +49,8 @@ audio_load='';
 data_load='';
 clust_dir_ext='_roboextract'; % add to cluster directory so we know it's been auto-clustered
 
+change_file='robofinch_fileadd';
+
 % scan for intan_frontend files, prefix songdet1
 
 for i=1:2:nparams
@@ -156,8 +158,6 @@ for i=1:length(uniq_dirs)
 
 	% parse by configuration, run batch score on each
 
-	disp('Making sure file configuration matches template...');
-
 	for j=1:nconfigs
 	
 		curr_batch=files_to_clust(config_idx==j);
@@ -165,6 +165,33 @@ for i=1:length(uniq_dirs)
 		% non-standard config?
 
 		new_params=default_params;
+
+		% strip out all files that have been clustered by all templates
+		
+		to_clust=zeros(1,length(curr_batch));
+		for k=1:length(curr_batch)
+
+			[pathname,filename,ext]=fileparts(curr_batch(k).name);
+
+			for l=1:length(template_files)
+
+				cluster_dir=fullfile(pathname,template_files(l).cluster_dir);
+				cluster_signal=fullfile(cluster_dir,['.' filename ext]);
+
+				if ~exist(cluster_signal,'file')
+					to_clust(k)=1;
+					break;
+				end
+			end
+		end
+	
+		clust_idx=find(to_clust);	
+
+		if isempty(clust_idx)
+			continue;
+		end
+
+		curr_batch=curr_batch(clust_idx);
 
 		if ~isempty(curr_batch(1).config)	
 			
@@ -194,7 +221,23 @@ for i=1:length(uniq_dirs)
 	
 		% for each template, check configuration against template
 
+		disp('Making sure file configuration matches template...');
+
 		to_clust=[];
+
+		% initialize progress bar
+
+		reverse_string='';
+		count=1;
+		total=length(curr_batch)*length(template_files);
+
+		% load in the templates
+
+		template={};
+		for k=1:length(template_files)
+			tmp=load(template_files(l).name,'template');
+			template{k}=tmp.template;
+		end
 
 		for k=1:length(curr_batch)
 
@@ -214,29 +257,52 @@ for i=1:length(uniq_dirs)
 				cluster_dir=fullfile(pathname,template_files(l).cluster_dir);
 				cluster_signal=fullfile(cluster_dir,['.' filename ext]);
 
+				if ~exist(cluster_dir,'dir')
+					mkdir(cluster_dir);
+				end
+
+				% text progress bar
+
+				percent_complete=100 * (count/total);
+				msg=sprintf('Percent done: %3.1f',percent_complete);
+				fprintf([reverse_string,msg]);
+				reverse_string=repmat(sprintf('\b'),1,length(msg));	
+				count=count+1;
+
 				if exist(cluster_signal,'file')
-					%disp(['Skipping:  ' curr_batch(k).name]);
 					continue;
 				end
 
-				[pathname,filename,ext]=fileparts(template_files(l).name);
-				load(template_files(l).name,'template');
-				
-				% make sure feature parameters match between template and sound
-
-				feature_match=robofinch_parameter_check(parameters,template.feature_parameters,feature_names);
-
-				% check sampling rates
-			
 				if isfield(parameters,'fs')
-					rate_match=(template.fs==parameters.fs);
+					rate_match=(template{l}.fs==parameters.fs);
 				else
 					warning('Could not find sampling rate of file, skipping...');
 					rate_match=0;
 				end
 
-				if ~feature_match | ~rate_match
-					%warning('Features did not match between template and file');
+				% short circuit of the sampling rates don't match
+
+				if ~rate_match
+					
+					% print done signal so we don't check again
+					
+					fid=fopen(cluster_signal,'w');
+					fclose(fid);
+					continue;
+				end
+
+				% make sure feature parameters match between template and sound
+
+				feature_match=robofinch_parameter_check(parameters,template{l}.feature_parameters,feature_names);
+
+				% check sampling rates
+			
+				if ~feature_match 
+
+					% print done signal so we don't check again
+					
+					fid=fopen(cluster_signal,'w');
+					fclose(fid);
 					continue;
 				end
 
@@ -246,6 +312,8 @@ for i=1:length(uniq_dirs)
 
 			end
 		end
+
+		fprintf('\n');
 
 		if isempty(to_clust)
 			continue;
@@ -309,6 +377,10 @@ for i=1:length(uniq_dirs)
 
 		audio_load=default_params.audio_load;
 		data_load=default_params.data_load;
+
+		% mark the directories with added cluster files for agg_data
+
+		robofinch_mark_dirs(curr_batch,template_files,to_clust,change_file);
 
 	end
 end
