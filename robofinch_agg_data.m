@@ -25,6 +25,7 @@ clust_ext='roboextract';
 extract_dir='roboaggregate';
 extract_file='roboaggregate.mat';
 change_file='robofinch_fileadd';
+extract_marker='robofinch_aggtrigger';
 
 % scan for intan_frontend files, prefix songdet1
 
@@ -40,6 +41,8 @@ for i=1:2:nparams
 			exclude=varargin{i+1};
 		case 'recurse_files'
 			recurse_files=varargin{i+1};
+		case 'extract_marker'
+			extract_marker=varargin{i+1};
 	end
 end
 
@@ -125,8 +128,10 @@ for i=1:length(uniq_dirs)
 
 	save(fullfile(output_dir,extract_file),'-struct','agg');
 
+	% trigger analysis scripts
 
-
+	fid=fopen(fullfile(output_dir,extract_marker),'w');
+	fclose(fid);
 
 end
 

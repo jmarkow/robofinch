@@ -51,11 +51,24 @@ for i=1:length(EXT_PTS)
 	[pathname,filename,ext]=fileparts(FILENAMES{i});
 	export_dir=fullfile(pathname,CLUSTER_DIR);
 
+	wav_dir=fullfile(export_dir,'wav');
+	mat_dir=fullfile(export_dir,'mat');
+	gif_dir=fullfile(export_dir,'gif');
+
 	if ~exist(export_dir,'dir')
 		mkdir(export_dir);
-		mkdir(export_dir,'wav');
-		mkdir(export_dir,'gif');
-		mkdir(export_dir,'mat');
+	end
+
+	if ~exist(wav_dir,'dir')
+		mkdir(wav_dir);
+	end
+
+	if ~exist(mat_dir,'dir')
+		mkdir(mat_dir);
+	end
+
+	if ~exist(gif_dir,'dir')
+		mkdir(gif_dir);
 	end
 
 	if length(EXT_PTS{i})<1
@@ -103,7 +116,7 @@ for i=1:length(EXT_PTS)
 
 	if export_spectrogram
 
-		[im_full,f,t_full]=zftftb_pretty_sonogram(y,fs,'len',16.7,'overlap',3.3,'zeropad',0,'filtering',500,'clipping',-6);
+		[im_full,f,t_full]=zftftb_pretty_sonogram(y,fs,'len',16.7,'overlap',3.3,'zeropad',0,'filtering',500,'clipping',[-2 2]);
 		
 		startidx=max([find(f<=disp_band(1))]);
 		stopidx=min([find(f>=disp_band(2))]);
@@ -181,7 +194,7 @@ for i=1:length(EXT_PTS)
 
 		if export_spectrogram
 
-			[im,f,t]=zftftb_pretty_sonogram(audio.data,audio.fs,'len',16.7,'overlap',14,'zeropad',0,'filtering',500,'clipping',-6);
+			[im,f,t]=zftftb_pretty_sonogram(audio.data,audio.fs,'len',16.7,'overlap',14,'zeropad',0,'filtering',500,'clipping',[-2 2]);
 
 			startidx=max([find(f<=disp_band(1))]);
 			stopidx=min([find(f>=disp_band(2))]);
