@@ -9,5 +9,6 @@ while 1==1
 	robofinch_sound_score(DIR,varargin{:});
 	robofinch_sound_clust(DIR,varargin{:});
 	robofinch_agg_data(DIR,varargin{:});
+	robofinch_agg_scripts(DIR,varargin{:});
 end
 

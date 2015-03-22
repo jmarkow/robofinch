@@ -21,8 +21,6 @@ max_date=inf;
 % sound scoring parameters, make sure these match your template
 
 parameter_file='robofinch_parameters.txt';
-clust_ext='roboextract';
-extract_dir='roboaggregate';
 extract_file='roboaggregate.mat';
 extract_marker='robofinch_aggtrigger';
 script_dir='agg_scripts';
@@ -46,43 +44,18 @@ for i=1:2:nparams
 	end
 end
 
-recurse_files(1).field='config';
-recurse_files(1).filename=parameter_file;
-
-recurse_files(2).field='data';
-recurse_files(2).filename=extract_file;
-
-tmp=mfilename('fullpath');
-[path,file,ext]=fileparts(tmp);
-
-tmp=what(fullfile(path,script_dir));
-fun_names={};
-for i=1:length(tmp.m)
-	[path,file,ext]=fileparts(tmp.m{i});
-	fun_names{i}=file;
-end
-
-% clusters all files that can be scored
-
 disp('Collecting files...');
-all_files=robofinch_dir_recurse(DIR,extract_marker,max_depth,max_date,recurse_files);
+all_files=robofinch_dir_recurse(DIR,extract_file,max_depth,max_date);
 
 % load parameters and run all scripts on aggregated data
 
 for i=1:length(all_files)
-
-	% todo, integrate fluolab script, almost there...
-
-	for j=1:length(fun_names)
-		disp(['Evaluating: ' fun_names{j} ' for ' all_files(i).data]);
-		feval(fun_names{j},all_files(i).data,all_files(i).config);
-	end
-
-	% delete the trigger file, move on...
-	
-	delete([all_files(i).name]);
-
+	[path,file,ext]=fileparts(all_files(i).name);
+	disp(['Tagging:  ' path]);
+	fid=fopen(fullfile(path,extract_marker),'w');
+	fclose(fid);
 end
+
 
 
 
