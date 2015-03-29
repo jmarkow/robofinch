@@ -2,14 +2,14 @@ function robofinch_fluolab(FILE,PARAMETER_FILE,varargin)
 
 if nargin<2, PARAMETER_FILE=[]; end
 
-save_dir='';
+save_dir='robofluolab';
 colors='jet';
 blanking=[.2 .2];
 normalize='m';
 dff=1;
 classify_trials='ttl';
 channel=1;
-daf_level=.1;
+daf_level=.05;
 trial_cut=2;
 newfs=100;
 tau=.1;
@@ -87,16 +87,15 @@ load(FILE,'adc','ttl','audio');
 [raw,regress,trials]=fluolab_fb_proc(adc,audio,ttl,'blanking',blanking,'normalize',normalize,'dff',dff,'classify_trials',classify_trials,...
 	'channel',channel,'daf_level',daf_level,'trial_cut',trial_cut,'newfs',newfs,'tau',tau,'detrend_win',detrend_win);
 
-if isempty(trials.all)
+if isempty(trials.fluo_include.all)
 	disp('Found no trials skipping...');
 	return;
 end
 
-tmp=ttl;
-tmp.data=tmp.data(:,trials.include);
-raw=fluolab_fb_proc_window(raw,tmp,'blanking',blanking);
-
-trials.all_class=fluolab_classify_trials(ttl.data,ttl.fs);
+%tmp=ttl;
+%tmp.data=tmp.data(:,trials.include);
+%raw=fluolab_fb_proc_window(raw,tmp,'blanking',blanking);
+%trials.all_class=fluolab_classify_trials(ttl.data,ttl.fs);
 
 fignums=fluolab_fb_plots(audio,raw,ttl,trials,'visible','off','blanking',blanking,'colors',colors,...
 	'ylimits',ylimits); %

@@ -26,6 +26,7 @@ extract_dir='roboaggregate';
 extract_file='roboaggregate.mat';
 extract_marker='robofinch_aggtrigger';
 script_dir='agg_scripts';
+skip='';
 
 % scan for intan_frontend files, prefix songdet1
 
@@ -43,6 +44,8 @@ for i=1:2:nparams
 			recurse_files=varargin{i+1};
 		case 'extract_marker'
 			extract_marker=varargin{i+1};
+		case 'skip'
+			skip=varargin{i+1};
 	end
 end
 
@@ -65,7 +68,7 @@ end
 % clusters all files that can be scored
 
 disp('Collecting files...');
-all_files=robofinch_dir_recurse(DIR,extract_marker,max_depth,max_date,recurse_files);
+all_files=robofinch_dir_recurse(DIR,extract_marker,max_depth,max_date,recurse_files,[],[],[],skip);
 
 % load parameters and run all scripts on aggregated data
 

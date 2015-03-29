@@ -50,6 +50,7 @@ data_load='';
 clust_dir_ext='_roboextract'; % add to cluster directory so we know it's been auto-clustered
 
 change_file='robofinch_fileadd';
+skip='';
 
 % scan for intan_frontend files, prefix songdet1
 
@@ -83,6 +84,8 @@ for i=1:2:nparams
 			data_load=varargin{i+1};
 		case 'audio_load'
 			audio_load=varargin{i+1};
+		case 'skip'
+			skip=varargin{i+1};
 	end
 end
 
@@ -97,7 +100,7 @@ default_params=struct('len',len,'overlap',overlap,'downsampling',downsampling,'s
 % clusters all files that can be scored
 
 disp('Collecting files...');
-all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,recurse_files);
+all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,recurse_files,[],[],[],skip);
 
 % now split and get the first directory for all files
 
@@ -356,6 +359,12 @@ for i=1:length(uniq_dirs)
 			idx=to_clust(find(to_clust(:,2)==k),1);
 
 			[hits.locs,hits.features,hits.file_list]=zftftb_template_match(template.features,{curr_batch(idx).name});
+		
+			template_files(k)	
+			if isempty(hits.locs)
+				continue;
+			end
+
 			[feature_matrix,file_id,peak_order]=zftftb_hits_to_mat(hits);
 
 			% pass the feature_matrix to the clustering algorithm

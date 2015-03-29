@@ -1,6 +1,7 @@
-function FILES=robofinch_dir_recurse(DIR,FILTER,MAXDEPTH,MAXDATE,TAG_NAME,TAG_FILE,FILES,DEPTH) 
+function FILES=robofinch_dir_recurse(DIR,FILTER,MAXDEPTH,MAXDATE,TAG_NAME,TAG_FILE,FILES,DEPTH,SKIP) 
 
-if nargin<8, DEPTH=0; end
+if nargin<9, SKIP=[]; end
+if nargin<8 | isempty(DEPTH), DEPTH=0; end
 
 if nargin<7
 	FILES=[];
@@ -8,16 +9,16 @@ end
 
 if nargin<6, TAG_FILE={}; end
 if nargin<5, TAG_NAME=[]; end 
-if nargin<4, MAXDATE=inf; end
-if nargin<3, MAXDEPTH=inf; end
+if nargin<4 | isempty(MAXDATE), MAXDATE=inf; end
+if nargin<3 | isempty(MAXDEPTH), MAXDEPTH=inf; end
 if nargin<2, FILTER=''; end
 if nargin<1, DIR=pwd; end
-
-DEPTH=DEPTH+1;
 
 if DEPTH>MAXDEPTH
 	return;
 end
+
+DEPTH=DEPTH+1;
 
 % did we find a config file along the way?
 
@@ -61,7 +62,14 @@ end
 % recurse if we find a directory
 
 for i=1:length(raw_listing)
+
+	if ~isempty(SKIP)
+		if any(strcmp(SKIP,raw_listing(i).name))
+			continue
+		end
+	end
+
 	if raw_listing(i).name(1)~='.' & raw_listing(i).isdir & ((daysdif(raw_listing(i).datenum,now))<MAXDATE)
-		FILES=robofinch_dir_recurse(fullfile(DIR,raw_listing(i).name),FILTER,MAXDEPTH,MAXDATE,TAG_NAME,TAG_FILE,FILES,DEPTH);
+		FILES=robofinch_dir_recurse(fullfile(DIR,raw_listing(i).name),FILTER,MAXDEPTH,MAXDATE,TAG_NAME,TAG_FILE,FILES,DEPTH,SKIP);
 	end
 end

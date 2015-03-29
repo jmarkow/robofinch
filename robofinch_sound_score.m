@@ -15,7 +15,7 @@ if mod(nparams,2)>0
 	error('Parameters must be specified as parameter/value pairs');
 end
 
-max_depth=6; % how many levels of sub-directories to search through
+max_depth=4; % how many levels of sub-directories to search through
 max_date=inf;
 file_ext='auto'; % automatically determine file type
 filename_filter='songdet1*.mat';
@@ -43,6 +43,7 @@ recurse_files(1).field='config';
 recurse_files(1).filename='robofinch_parameters.txt';
 
 audio_load='';
+skip=[];
 
 % scan for intan_frontend files, prefix songdet1
 
@@ -86,6 +87,8 @@ for i=1:2:nparams
 			exclude=varargin{i+1};
 		case 'recurse_files'
 			recurse_files=varargin{i+1};
+		case 'skip'
+			skip=varargin{i+1};
 	end
 end
 
@@ -103,7 +106,7 @@ default_params=struct('len',len,'overlap',overlap,'downsampling',downsampling,'s
 % recurse the directory 
 % TODO: prevent recursion in old directories
 
-all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,recurse_files);
+all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,recurse_files,[],[],[],skip);
 
 % which files need to be processed?
 
