@@ -75,7 +75,6 @@ for i=1:ntypes
 
 			end
 
-
 			% if we have a map, use it, otherwise don't
 
 			if ismap

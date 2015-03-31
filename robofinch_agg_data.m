@@ -27,6 +27,8 @@ extract_file='roboaggregate.mat';
 change_file='robofinch_fileadd';
 extract_marker='robofinch_aggtrigger';
 skip='';
+blanking=1;
+
 % scan for intan_frontend files, prefix songdet1
 
 for i=1:2:nparams
@@ -45,6 +47,8 @@ for i=1:2:nparams
 			extract_marker=varargin{i+1};
 		case 'skip'
 			skip=varargin{i+1};
+		case 'blanking'
+			blanking=varargin{i+1};
 	end
 end
 
@@ -112,7 +116,7 @@ for i=1:length(uniq_dirs)
 		% actual data aggregation
 
 		new_data=load(curr_batch(j).name);
-		[agg,to_del(j)]=robofinch_add_data(agg,data_type,new_data,j);
+		[agg,to_del(j)]=robofinch_add_data(agg,data_type,new_data,j,blanking);
 	end
 
 	fprintf('\n');
