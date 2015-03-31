@@ -43,7 +43,15 @@ end
 
 y2=[];
 
+
+reverse_string='';
+	
 for i=1:length(EXT_PTS)
+
+	percent_complete=100 * (i/length(EXT_PTS));
+	msg=sprintf('Percent done: %3.1f',percent_complete);
+	fprintf([reverse_string,msg]);
+	reverse_string=repmat(sprintf('\b'),1,length(msg));
 
 	% check for extraction points in each file, if we find some, save to cluster_dir
 	% 
@@ -107,12 +115,10 @@ for i=1:length(EXT_PTS)
 	end
 
 	% form the audio data
-	%
 	
 	len=length(y);
 
 	% make the full spectrogram, mark extraction points
-
 
 	if export_spectrogram
 
@@ -127,7 +133,6 @@ for i=1:length(EXT_PTS)
 		sonogram_filename=fullfile(export_dir,'gif',[filename '.gif']);
 
 	end
-
 
 	filecount=1;
 
@@ -237,3 +242,4 @@ for i=1:length(EXT_PTS)
 
 end
 
+fprintf('\n');
