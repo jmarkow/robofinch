@@ -78,7 +78,7 @@ for i=1:ntypes
 			% if we have a map, use it, otherwise don't
 
 			if ismap
-				for j=1:nchannels
+				for j=1:agg_nchannels
 					if map(j)~=0
 						AGG.(data_types{i}).data(:,IDX,j)=curr_type.data(:,map(j));
 					else
