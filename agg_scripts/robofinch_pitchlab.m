@@ -19,6 +19,8 @@ ylim_order=1e2;
 bin_res=5;
 smooth_trials=100;
 pitch_target=[];
+pitch_threshold=[]; % pitch threshold in Hz
+pitch_condition=''; % 'gt' is greater than 'lt is less than (as in noise in this condition)
 
 save_file='robopitchlab.mat';
 
@@ -59,6 +61,10 @@ for i=1:2:nparams
 			smooth_trials=varargin{i+1};
 		case 'pitch_target'
 			pitch_target=varargin{i+1};
+		case 'pitch_threshold'
+			pitch_threshold=varargin{i+1};
+		case 'pitch_condition'
+			pitch_condition=varargin{i+1};
 
 	end
 end
@@ -103,7 +109,7 @@ pitch=fluolab_fb_pitch_proc(audio,pitch_target);
 
 fignums=fluolab_fb_pitch_plots(mean(pitch.target.mat,3),'visible','off','blanking',blanking,'colors',colors,...
 	'hist_order',hist_order,'smooth_trials',smooth_trials,'ylim_order',ylim_order,'hist_order',hist_order,...
-	'bin_res',bin_res,'datenums',file_datenum(trials.all.catch)); 
+	'bin_res',bin_res,'datenums',file_datenum(trials.all.catch),'pitch_threshold',pitch_threshold,'pitch_condition',pitch_condition); 
 
 fig_names=fieldnames(fignums);
 

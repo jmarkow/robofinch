@@ -81,7 +81,7 @@ if ~isempty(PARAMETER_FILE)
 end
 
 
-load(FILE,'adc','ttl','audio');
+load(FILE,'adc','ttl','audio','file_datenum');
 [path,file,ext]=fileparts(FILE);
 
 [raw,regress,trials]=fluolab_fb_proc(adc,audio,ttl,'blanking',blanking,'normalize',normalize,'dff',dff,'classify_trials',classify_trials,...
@@ -98,7 +98,7 @@ end
 %trials.all_class=fluolab_classify_trials(ttl.data,ttl.fs);
 
 fignums=fluolab_fb_plots(audio,raw,ttl,trials,'visible','off','blanking',blanking,'colors',colors,...
-	'ylimits',ylimits); %
+	'ylimits',ylimits,'datenums',file_datenum); %
 fig_names=fieldnames(fignums);
 
 for i=1:length(fig_names)
