@@ -67,11 +67,29 @@ for i=1:ntypes
 				
 				% if both have labels, we can form a channel map
 
+
 				ismap=1;
 
+				idx1=zeros(1,agg_nlabels);
 				for j=1:agg_nlabels
-					map(j)=find(curr_type.labels==AGG.(data_types{i}).labels(j));
+					idx1(j)=curr_type.labels==AGG.(data_types{i}).labels(j);
 				end
+
+				if isfield(AGG.(data_types{i}),'ports')
+					if ~isfield(curr_type,'labels')
+						TO_DEL=1;
+						return;
+					else
+						idx2=zeros(1,agg_nlabels);
+						for j=1:agg_nlabels
+							idx2(j)=curr_type.ports==AGG.(data_types{i}).ports(j);
+						end
+					end
+				else
+					idx2=ones(1,agg_nlabels);
+				end
+
+				map=find(idx1&idx2);
 
 			end
 
