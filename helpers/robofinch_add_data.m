@@ -72,7 +72,7 @@ for i=1:ntypes
 
 				idx1=zeros(1,agg_nlabels);
 				for j=1:agg_nlabels
-					idx1(j)=curr_type.labels==AGG.(data_types{i}).labels(j);
+					idx1(curr_type.labels==AGG.(data_types{i}).labels(j))=1;
 				end
 
 				if isfield(AGG.(data_types{i}),'ports')
@@ -82,7 +82,7 @@ for i=1:ntypes
 					else
 						idx2=zeros(1,agg_nlabels);
 						for j=1:agg_nlabels
-							idx2(j)=curr_type.ports==AGG.(data_types{i}).ports(j);
+							idx2(curr_type.ports==AGG.(data_types{i}).ports(j))=1;
 						end
 					end
 				else
