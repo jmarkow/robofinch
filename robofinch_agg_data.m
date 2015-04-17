@@ -132,7 +132,7 @@ for i=1:length(uniq_dirs)
 		delete(fullfile(uniq_dirs{i},'..',change_file));
 	end
 
-	save(fullfile(output_dir,extract_file),'-struct','agg');
+	save(fullfile(output_dir,extract_file),'-struct','agg','-v7.3');
 
 	% trigger analysis scripts
 

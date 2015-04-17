@@ -122,7 +122,7 @@ for i=1:length(EXT_PTS)
 
 	if export_spectrogram
 
-		[im_full,f,t_full]=zftftb_pretty_sonogram(y,fs,'len',16.7,'overlap',3.3,'zeropad',0,'filtering',500,'clipping',[-2 2]);
+		[im_full,f,t_full]=zftftb_pretty_sonogram(y,fs,'len',16.7,'overlap',3.3,'zeropad',0,'filtering',500,'clipping',[-2 2],'norm_amp',1);
 		
 		startidx=max([find(f<=disp_band(1))]);
 		stopidx=min([find(f>=disp_band(2))]);
@@ -194,12 +194,12 @@ for i=1:length(EXT_PTS)
 				tmp=tmp/(max_audio*(1+1e-3));
 			end
 
-			wavwrite(tmp,audio.fs,fullfile(export_dir,'wav',[ export_file '.wav' ]));
+			audiowrite(fullfile(export_dir,'wav',[ export_file '.wav' ]),tmp,round(audio.fs));
 		end
 
 		if export_spectrogram
 
-			[im,f,t]=zftftb_pretty_sonogram(audio.data,audio.fs,'len',16.7,'overlap',14,'zeropad',0,'filtering',500,'clipping',[-2 2]);
+			[im,f,t]=zftftb_pretty_sonogram(audio.data,audio.fs,'len',16.7,'overlap',14,'zeropad',0,'filtering',500,'clipping',[-2 2],'norm_amp',1);
 
 			startidx=max([find(f<=disp_band(1))]);
 			stopidx=min([find(f>=disp_band(2))]);

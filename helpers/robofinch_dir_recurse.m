@@ -34,7 +34,9 @@ if ~isempty(TAG_NAME)
 
 	for i=1:length(raw_listing)
 		for j=1:length(TAG_NAME)
-			if strcmp(raw_listing(i).name,TAG_NAME(j).filename)
+			if strcmp(raw_listing(i).name,TAG_NAME(j).filename) & TAG_NAME(j).multi
+				TAG_FILE{j}{end+1}=fullfile(DIR,raw_listing(i).name);
+			else
 				TAG_FILE{j}=fullfile(DIR,raw_listing(i).name);
 			end
 		end
