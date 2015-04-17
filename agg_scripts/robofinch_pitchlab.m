@@ -72,19 +72,23 @@ end
 % if a parameter file is provided, use new parameter
 
 if ~isempty(PARAMETER_FILE)
-	tmp=robofinch_read_config(PARAMETER_FILE);
-	new_param_names=fieldnames(tmp);
 
-	for i=1:length(new_param_names)
+	for i=1:length(PARAMETER_FILE)
 
+		tmp=robofinch_read_config(PARAMETER_FILE{i});
+		new_param_names=fieldnames(tmp);
 
-		if any(strcmp(param_names,new_param_names{i}))
-			% map variable to the current workspace
-			
-			disp(['Setting parameter ' new_param_names{i} ' to:  ' num2str(tmp.(new_param_names{i}))]);
-			feval(@()assignin('caller',new_param_names{i},tmp.(new_param_names{i})));
+		for j=1:length(new_param_names)
+			if any(strcmp(param_names,new_param_names{j}))
+
+				% map variable to the current workspace
+
+				disp(['Setting parameter ' new_param_names{j} ' to:  ' num2str(tmp.(new_param_names{j}))]);
+				feval(@()assignin('caller',new_param_names{j},tmp.(new_param_names{j})));
+			end
 		end
 	end
+
 end
 
 if ~exist('pitch_target','var') | isempty(pitch_target)

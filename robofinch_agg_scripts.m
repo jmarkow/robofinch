@@ -51,9 +51,11 @@ end
 
 recurse_files(1).field='config';
 recurse_files(1).filename=parameter_file;
+recurse_files(1).multi=1;
 
 recurse_files(2).field='data';
 recurse_files(2).filename=extract_file;
+recurse_files(2).multi=0;
 
 tmp=mfilename('fullpath');
 [path,file,ext]=fileparts(tmp);

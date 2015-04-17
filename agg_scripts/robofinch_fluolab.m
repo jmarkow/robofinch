@@ -17,6 +17,8 @@ detrend_win=.3;
 save_file='robofluolab.mat';
 ylimits=[.2 .7];
 
+param_names=who('-regexp','^[a-z]');
+
 % parameter are all values that begin with lowercase letters
 
 nparams=length(varargin);
@@ -26,7 +28,6 @@ if mod(nparams,2)>0
 end
 
 
-param_names=who('-regexp','^[a-z]');
 
 % scan for intan_frontend files, prefix songdet1
 
@@ -64,20 +65,26 @@ end
 % if a parameter file is provided, use new parameter
 
 
+PARAMETER_FILE
+
 if ~isempty(PARAMETER_FILE)
-	tmp=robofinch_read_config(PARAMETER_FILE);
-	new_param_names=fieldnames(tmp);
 
-	for i=1:length(new_param_names)
+	for i=1:length(PARAMETER_FILE)
 
+		tmp=robofinch_read_config(PARAMETER_FILE{i});
+		new_param_names=fieldnames(tmp);
 
-		if any(strcmp(param_names,new_param_names{i}))
-			% map variable to the current workspace
-			
-			disp(['Setting parameter ' new_param_names{i} ' to:  ' num2str(tmp.(new_param_names{i}))]);
-			feval(@()assignin('caller',new_param_names{i},tmp.(new_param_names{i})));
+		for j=1:length(new_param_names)
+			if any(strcmp(param_names,new_param_names{j}))
+
+				% map variable to the current workspace
+
+				disp(['Setting parameter ' new_param_names{j} ' to:  ' num2str(tmp.(new_param_names{j}))]);
+				feval(@()assignin('caller',new_param_names{j},tmp.(new_param_names{j})));
+			end
 		end
 	end
+
 end
 
 

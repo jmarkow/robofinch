@@ -23,12 +23,6 @@ filename_exclude={}; % anything to exclude
 
 % sound scoring parameters, make sure these match your template
 
-len=34;
-overlap=33;
-downsampling=5;
-song_band=[3e3 9e3];
-norm_amp=1;
-filter_scale=10;
 padding=[.2 .2];
 
 export_spectrogram=1;
@@ -52,6 +46,8 @@ clust_dir_ext='_roboextract'; % add to cluster directory so we know it's been au
 
 change_file='robofinch_fileadd';
 skip='';
+
+param_names=who('-regexp','^[a-z]');
 
 % scan for intan_frontend files, prefix songdet1
 
@@ -90,13 +86,13 @@ for i=1:2:nparams
 	end
 end
 
+for i=1:length(param_names)
+	default_params.(param_names{i})=eval([param_names{i}]);
+end
+
 % wrap in a daemon for continuous scoring
 
 filename_exclude{end+1}=score_ext;
-
-default_params=struct('len',len,'overlap',overlap,'downsampling',downsampling,'song_band',song_band,...
-	'filter_scale',filter_scale,'norm_amp',norm_amp,'audio_load',audio_load,'data_load',data_load,...
-	'padding',padding);
 
 % clusters all files that can be scored
 
@@ -189,32 +185,6 @@ for i=1:length(uniq_dirs)
 
 	curr_batch=curr_batch(clust_idx);
 
-	%if ~isempty(curr_batch(1).config)	
-	%
-	%	tmp=robofinch_read_config(curr_batch(1).config);
-	%	new_param_names=fieldnames(tmp);
-	%
-	%	% assign field names to variables
-	%
-	%	for k=1:length(new_param_names)
-	%		disp(['Setting parameter ' new_param_names{k} ':  ' num2str(tmp.(new_param_names{k})) ]);
-	%		new_params.(new_param_names{k})=tmp.(new_param_names{k});
-	%	end
-	%
-	%	if isfield(tmp,'audio_load')
-	%		eval([new_params.audio_load]);
-	%	end
-	%
-	%	if isfield(tmp,'data_load')
-	%		eval([new_params.data_load]);
-	%	end
-	%
-	%end
-
-	%if isempty(audio_load)
-	%	error('Need audio loading function to continue...');
-	%end
-
 	% for each template, check configuration against template
 
 	disp('Making sure file configuration matches template...');
@@ -230,9 +200,16 @@ for i=1:length(uniq_dirs)
 	% load in the templates
 
 	template={};
-	for k=1:length(template_files)
-		tmp=load(template_files(l).name,'template');
-		template{k}=tmp.template;
+	for j=1:length(template_files)
+		tmp=load(template_files(j).name,'template');
+		template{j}=tmp.template;
+	end
+
+	if length(curr_batch)>0
+		[pathname,filename,ext]=fileparts(curr_batch(1).name);
+		feature_file=fullfile(pathname,score_dir,[ filename score_ext '.mat' ]);
+		load(feature_file,'parameters');
+		curr_batch_parameters=parameters;
 	end
 
 	for j=1:length(curr_batch)
@@ -242,6 +219,7 @@ for i=1:length(uniq_dirs)
 		[pathname,filename,ext]=fileparts(curr_batch(j).name);
 		feature_file=fullfile(pathname,score_dir,[ filename score_ext '.mat' ]);
 		load(feature_file,'parameters');
+		curr_batch_parameters(j)=parameters;
 		feature_names=fieldnames(parameters);
 
 		for k=1:length(template_files)
@@ -270,7 +248,7 @@ for i=1:length(uniq_dirs)
 			end
 
 			if isfield(parameters,'fs')
-				rate_match=(template{l}.fs==parameters.fs);
+				rate_match=(template{k}.fs==parameters.fs);
 			else
 				warning('Could not find sampling rate of file, skipping...');
 				rate_match=0;
@@ -289,7 +267,7 @@ for i=1:length(uniq_dirs)
 
 			% make sure feature parameters match between template and sound
 
-			feature_match=robofinch_parameter_check(parameters,template{k}.feature_parameters,feature_names);
+			feature_match=robofinch_parameter_check(curr_batch_parameters(j),template{k}.feature_parameters,feature_names);
 
 			% check sampling rates
 
@@ -302,7 +280,7 @@ for i=1:length(uniq_dirs)
 				continue;
 			end
 
-			% if we've made it to this point, we're clear to clust file k with template l, add to batch
+			% if we've made it to this point, we're clear to clust file j with template k, add to batch
 
 			to_clust=[to_clust;j k];
 
@@ -315,78 +293,7 @@ for i=1:length(uniq_dirs)
 		continue;
 	end
 
-	disp('Segregating data by configuration...');
-
-	all_params=fieldnames(default_params);
-
-	for j=1:length(curr_batch)
-
-		new_params=default_params; % each file begins with the default parameters
-		
-		if ~isempty(curr_batch(j).config)
-
-			for k=1:length(curr_batch(j).config)
-
-				tmp=robofinch_read_config(curr_batch(j).config{k});
-				new_param_names=fieldnames(tmp);
-
-				for l=1:length(new_param_names)
-					disp(['Setting parameter ' new_param_names{l} ':  ' num2str(tmp.(new_param_names{l})) ]);
-					new_params.(new_param_names{l})=tmp.(new_param_names{l});
-				end
-
-				if isfield(tmp,'audio_load')
-					eval([new_params.audio_load]);
-				end
-
-				if isfield(tmp,'data_load')
-					eval([new_params.data_load]);
-				end
-
-			end
-		end
-
-	end
-
-
-			%if ~isempty(curr_batch(1).config)	
-	%
-	%	tmp=robofinch_read_config(curr_batch(1).config);
-	%	new_param_names=fieldnames(tmp);
-	%
-	%	% assign field names to variables
-	%
-	%	for k=1:length(new_param_names)
-	%		disp(['Setting parameter ' new_param_names{k} ':  ' num2str(tmp.(new_param_names{k})) ]);
-	%		new_params.(new_param_names{k})=tmp.(new_param_names{k});
-	%	end
-	%
-	%	if isfield(tmp,'audio_load')
-	%		eval([new_params.audio_load]);
-	%	end
-	%
-	%	if isfield(tmp,'data_load')
-	%		eval([new_params.data_load]);
-	%	end
-	%
-	%end
-
-	%if isempty(audio_load)
-	%	error('Need audio loading function to continue...');
-	%end
-
-
-
-
-
-
-	end
-
-	
 	disp('Clustering...');
-
-
-
 	for j=1:length(template_files)
 
 		% find sound files to score with this template file
@@ -396,6 +303,8 @@ for i=1:length(uniq_dirs)
 
 		% if we find any parameters in the template directory, *they override other parameters*
 
+		new_params=default_params;
+
 		if ~isempty(template_files(j).parameter_file)
 
 			tmp=robofinch_read_config(template_files(j).parameter_file);
@@ -404,16 +313,18 @@ for i=1:length(uniq_dirs)
 			% assign field names to variables
 
 			for k=1:length(new_param_names)
-				disp(['Setting parameter ' new_param_names{k} ':  ' num2str(tmp.(new_param_names{k})) ]);
-				new_params.(new_param_names{k})=tmp.(new_param_names{k});
+				if any(strcmp(param_names,new_param_names{k}))
+					disp(['Setting parameter ' new_param_names{k} ':  ' num2str(tmp.(new_param_names{k})) ]);
+					new_params.(new_param_names{k})=tmp.(new_param_names{k});
+				end
 			end
 
-			if isfield(tmp,'audio_load')
-				eval([new_params.audio_load]);
+			if isfield(new_params,'audio_load')
+				new_params.audio_load_fun=eval([new_params.audio_load]);
 			end
 
-			if isfield(tmp,'data_load')
-				eval([new_params.data_load]);
+			if isfield(new_params,'data_load')
+				new_params.data_load_fun=eval([new_params.data_load]);
 			end
 
 		end
@@ -423,7 +334,7 @@ for i=1:length(uniq_dirs)
 
 		[hits.locs,hits.features,hits.file_list]=zftftb_template_match(template.features,{curr_batch(idx).name});
 
-		template_files(j)	
+		template_files(j)
 		if isempty(hits.locs)
 			continue;
 		end
@@ -436,20 +347,19 @@ for i=1:length(uniq_dirs)
 
 		% find where labels==selection, add the extraction points, be done with this...
 
-
 		hits.ext_pts=zftftb_add_extractions(hits,labels,cluster_choice,file_id,peak_order,template.fs,template_size,...
-			'padding',new_params.padding,'downsampling',new_params.downsampling,'len',new_params.len,'overlap',new_params.overlap);
+			'padding',new_params.padding,'downsampling',cat(1,curr_batch_parameters(idx).downsampling),...
+			'len',cat(1,curr_batch_parameters(idx).len),'overlap',cat(1,curr_batch_parameters(idx).overlap));
 
 		% extract the hits, write done signals
 
-		robofinch_extract_data(hits.ext_pts,hits.file_list,template_files(j).cluster_dir,'audio_load',audio_load,'data_load',data_load);
+		robofinch_extract_data(hits.ext_pts,hits.file_list,template_files(j).cluster_dir,'audio_load',new_params.audio_load_fun,'data_load',new_params.data_load_fun);
 
 	end
 
 	% reset loading functions
 
-	audio_load=default_params.audio_load;
-	data_load=default_params.data_load;
+	clearvars curr_batch_parameters new_params;
 
 	% mark the directories with added cluster files for agg_data
 

@@ -8,6 +8,7 @@ function PARAMETERS=robofinch_read_config(FILE)
 
 fid=fopen(FILE,'r');
 readdata=textscan(fid,'%s%[^\n]','commentstyle','#');
+fclose(fid);
 
 for i=1:length(readdata{1})
 

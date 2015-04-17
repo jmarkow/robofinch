@@ -41,11 +41,13 @@ score_ext='_score'; %
 
 recurse_files(1).field='config';
 recurse_files(1).filename='robofinch_parameters.txt';
-
+recurse_files(1).multi=1; % allow for multiple configurations to be associated with a single file
 audio_load='';
 skip=[];
 
 % scan for intan_frontend files, prefix songdet1
+
+param_names=who('-regexp','^[a-z]');
 
 for i=1:2:nparams
 	switch lower(varargin{i})
@@ -96,8 +98,9 @@ end
 
 filename_exclude{end+1}=score_ext;
 
-default_params=struct('len',len,'overlap',overlap,'downsampling',downsampling,'song_band',song_band,...
-	'filter_scale',filter_scale,'norm_amp',norm_amp,'audio_load',audio_load,'spec_sigma',spec_sigma);
+for i=1:length(param_names)
+	default_params.(param_names{i})=eval([param_names{i}]);
+end
 
 % do we have any templates
 
@@ -120,50 +123,53 @@ for i=1:length(filename_exclude)
 end
 
 files_to_score(to_exclude)=[];
-[config_files,~,config_idx]=unique({files_to_score(:).config});
+to_exclude=[];
 
-% score files first, then move on to clustering
+for i=1:length(files_to_score)
 
-nconfigs=length(config_files);
-
-% parse by configuration, run batch features on each
-
-for i=1:nconfigs
-
-	curr_batch=files_to_score(config_idx==i);
+	curr_batch=files_to_score(i);
 
 	% non-standard config?
 
 	new_params=default_params;
 
-	if ~isempty(curr_batch(1).config)	
-		tmp=robofinch_read_config(curr_batch(1).config);
-		new_param_names=fieldnames(tmp);
+	% assign parameters hierarchically
+	% TODO: write parameters to a structure array then compute features in large batch
 
-		% assign field names to variables
+	if ~isempty(curr_batch.config)
+		for j=1:length(curr_batch.config)
 
-		for j=1:length(new_param_names)
-			disp(['Setting parameter...']);
-			new_params.(new_param_names{j})=tmp.(new_param_names{j});
-		end
+			tmp=robofinch_read_config(curr_batch.config{j});
+			new_param_names=fieldnames(tmp);
 
-		if isfield(tmp,'audio_load')
-			eval([new_params.audio_load]);
+			% assign field names to variables
+
+			for k=1:length(new_param_names)
+				if any(strcmp(param_names,new_param_names{k}))
+					new_params.(new_param_names{k})=tmp.(new_param_names{k});
+				end
+			end
+
+			if isfield(new_params,'audio_load') & ~isempty(new_params.audio_load)
+				new_params.audio_load_fun=eval([new_params.audio_load]);
+			else
+				to_del=[to_exclude i];
+			end
+
 		end
 	end
+	
+	params(i)=new_params;
 
-	%if isempty(audio_load)
-	%	error('Need audio loading function to continue...');
-	%end
+	% score the file
 
-	% score the files
+end
 
-	zftftb_batch_features({curr_batch(:).name},'len',new_params.len,'overlap',...
-		new_params.overlap,'downsampling',new_params.downsampling,'filter_scale',new_params.filter_scale,...
-		'norm_amp',new_params.norm_amp,'song_band',new_params.song_band,'audio_load',audio_load,'spec_sigma',spec_sigma);
+files_to_score(to_exclude)=[];
+params(to_exclude)=[];
 
-	% reset loading functions (all other parameters are set in the structure)
-
-	audio_load=default_params.audio_load;
-
+if length(files_to_score)>0
+	zftftb_batch_features({files_to_score(:).name},'len',cat(1,params(:).len),'overlap',...
+		cat(1,params(:).overlap),'downsampling',cat(1,params(:).downsampling),'filter_scale',cat(1,params(:).filter_scale),...
+		'norm_amp',cat(1,params(:).norm_amp),'song_band',cat(1,params(:).song_band),'audio_load',{params(:).audio_load_fun},'spec_sigma',cat(1,params(:).spec_sigma));
 end
