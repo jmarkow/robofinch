@@ -72,11 +72,6 @@ end
 [uniq_dirs,~,uniq_idx]=unique(first_dir);
 
 for i=1:length(uniq_dirs)
-	uniq_dirs{i}
-end
-
-pause();
-for i=1:length(uniq_dirs)
 
 	% within each directory, load the first file, these variables will be used to bootstrap the process
 	
