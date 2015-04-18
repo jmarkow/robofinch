@@ -3,33 +3,27 @@ function robofinch_mark_dirs(FILELIST,TEMPLATELIST,TO_CLUST,SIGNAL)
 %
 %
 %
+% get all unique pairings of files and directories
 
-% grab all files, get unique directories, write change signals
 
-% files
+uniq_pairs=unique(TO_CLUST,'rows');
+npairs=size(uniq_pairs,1);
+paths=cell(1,npairs);
 
-file_idx=unique(TO_CLUST(:,1));
+for i=1:npairs
 
-% templates
+	curr_pair=uniq_pairs(i,:);
+	[pathname,~,~,]=fileparts(FILELIST(curr_pair(1)).name);
 
-template_idx=unique(TO_CLUST(:,2));
+	% construct the path
 
-files={FILELIST(file_idx).name};
-templates={TEMPLATELIST(template_idx).cluster_dir};
+	paths{i}=fullfile(pathname,TEMPLATELIST(curr_pair(2)).cluster_dir,SIGNAL);
 
-nfiles=length(files);
-basedir=cell(1,nfiles);
-
-for i=1:length(files)
-	[pathname,~,~]=fileparts(files{i});
-	basedir{i}=pathname;
 end
 
-uniq_dirs=unique(basedir);
+uniq_paths=unique(paths);
 
-for i=1:length(uniq_dirs)
-	for j=1:length(templates)
-		fid=fopen(fullfile(uniq_dirs{i},templates{j},SIGNAL),'w');
-		fclose(fid);
-	end
+for i=1:length(uniq_paths)
+	fid=fopen(uniq_paths{i},'w');
+	fclose(fid);
 end

@@ -52,11 +52,9 @@ for i=1:2:nparams
 	end
 end
 
-% wrap in a daemon for continuous scoring
-
 filename_filter=[ '*' clust_ext '*.mat' ];
 
-% clusters all files that can be scored
+% cluster all files that can be scored
 
 disp('Collecting files...');
 all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,[],[],[],[],skip);
@@ -73,6 +71,11 @@ end
 
 [uniq_dirs,~,uniq_idx]=unique(first_dir);
 
+for i=1:length(uniq_dirs)
+	uniq_dirs{i}
+end
+
+pause();
 for i=1:length(uniq_dirs)
 
 	% within each directory, load the first file, these variables will be used to bootstrap the process

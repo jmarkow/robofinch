@@ -2,6 +2,7 @@ function robofinch_sound_score(DIR,varargin)
 
 if nargin<1 | isempty(DIR), DIR=pwd; end
 
+% TODO: figure out what FILE_ADD is going ALL directories!
 %%%% recurse through all sub-directories, looking for files to process
 
 %
