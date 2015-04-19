@@ -2,6 +2,8 @@ function robofinch_fluolab(FILE,PARAMETER_FILE,varargin)
 
 if nargin<2, PARAMETER_FILE=[]; end
 
+% TODO: figure out what's going on in new dataset
+
 save_dir='robopitchlab';
 colors='jet';
 blanking=[.2 .2];
@@ -21,6 +23,7 @@ smooth_trials=100;
 pitch_target=[];
 pitch_threshold=[]; % pitch threshold in Hz
 pitch_condition=''; % 'gt' is greater than 'lt is less than (as in noise in this condition)
+cf=[1e3:1e3:1e3*5];
 
 save_file='robopitchlab.mat';
 
@@ -65,6 +68,8 @@ for i=1:2:nparams
 			pitch_threshold=varargin{i+1};
 		case 'pitch_condition'
 			pitch_condition=varargin{i+1};
+		case 'cf'
+			cf=varargin{i+1};
 
 	end
 end
@@ -109,7 +114,7 @@ end
 % check for matching syllable extraction
 
 audio.data=audio.data(:,trials.all.catch);
-pitch=fluolab_fb_pitch_proc(audio,pitch_target);
+pitch=fluolab_fb_pitch_proc(audio,pitch_target,'cf',cf);
 
 fignums=fluolab_fb_pitch_plots(mean(pitch.target.mat,3),'visible','off','blanking',blanking,'colors',colors,...
 	'hist_order',hist_order,'smooth_trials',smooth_trials,'ylim_order',ylim_order,'hist_order',hist_order,...
