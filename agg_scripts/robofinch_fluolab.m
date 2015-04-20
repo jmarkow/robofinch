@@ -11,9 +11,10 @@ classify_trials='ttl';
 channel=1;
 daf_level=.05;
 trial_cut=2;
-newfs=100;
+newfs=400;
 tau=.1;
 detrend_win=.3;
+detrend_method='p';
 save_file='robofluolab.mat';
 ylimits=[.2 .7];
 
@@ -59,6 +60,8 @@ for i=1:2:nparams
 			detrend_win=varargin{i+1};
 		case 'ylimits'
 			ylimits=varargin{i+1};
+		case 'detrend_method'
+			detrend_method=varargin{i+1};
 	end
 end
 
@@ -92,10 +95,15 @@ load(FILE,'adc','ttl','audio','file_datenum');
 [path,file,ext]=fileparts(FILE);
 
 [raw,regress,trials]=fluolab_fb_proc(adc,audio,ttl,'blanking',blanking,'normalize',normalize,'dff',dff,'classify_trials',classify_trials,...
-	'channel',channel,'daf_level',daf_level,'trial_cut',trial_cut,'newfs',newfs,'tau',tau,'detrend_win',detrend_win);
+	'channel',channel,'daf_level',daf_level,'trial_cut',trial_cut,'newfs',newfs,'tau',tau,'detrend_win',detrend_win,'detrend_method',detrend_method);
+
+if isempty(raw)
+	warning('Fluo analysis could not complete, skipping plotting...');
+	return;
+end
 
 if isempty(trials.fluo_include.all)
-	disp('Found no trials skipping...');
+	warning('Found no trials skipping...');
 	return;
 end
 

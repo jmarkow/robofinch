@@ -106,19 +106,25 @@ load(FILE,'ttl','audio','file_datenum');
 
 trials=fluolab_classify_trials(ttl,audio,'method',classify_trials,'daf_level',daf_level);
 
-if isempty(trials.all.catch)
+if lower(classify_trials(1))=='t'
+	use_trials=trials.all.catch;
+elseif lower(classify_trials(1))=='s'
+	use_trials=trials.all.other;
+end
+
+if isempty(use_trials)
 	disp('Found no trials skipping...');
 	return;
 end
 
 % check for matching syllable extraction
 
-audio.data=audio.data(:,trials.all.catch);
+audio.data=audio.data(:,use_trials);
 pitch=fluolab_fb_pitch_proc(audio,pitch_target,'cf',cf);
 
 fignums=fluolab_fb_pitch_plots(mean(pitch.target.mat,3),'visible','off','blanking',blanking,'colors',colors,...
 	'hist_order',hist_order,'smooth_trials',smooth_trials,'ylim_order',ylim_order,'hist_order',hist_order,...
-	'bin_res',bin_res,'datenums',file_datenum(trials.all.catch),'pitch_threshold',pitch_threshold,'pitch_condition',pitch_condition); 
+	'bin_res',bin_res,'datenums',file_datenum(use_trials),'pitch_threshold',pitch_threshold,'pitch_condition',pitch_condition); 
 
 fig_names=fieldnames(fignums);
 
