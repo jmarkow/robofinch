@@ -108,7 +108,7 @@ for i=1:length(EXT_PTS)
 
 			if ~isempty(data_load)
 				y2=data_load(FILENAMES{i});
-				if ~istruct(y2)
+				if ~isstruct(y2)
 					error('Data load must return a structure, consult the documentation!');
 				end
 				data_vars=fieldnames(y2);
