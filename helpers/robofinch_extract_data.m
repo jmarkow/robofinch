@@ -41,12 +41,14 @@ end
 % return structure with all variables to carry 
 % over to the clustered file
 
-y2=[];
 
 
 reverse_string='';
 	
 for i=1:length(EXT_PTS)
+
+	y=[];
+	y2=[];
 
 	percent_complete=100 * (i/length(EXT_PTS));
 	msg=sprintf('Percent done: %3.1f',percent_complete);
