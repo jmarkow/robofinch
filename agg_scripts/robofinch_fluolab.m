@@ -94,6 +94,11 @@ end
 load(FILE,'adc','ttl','audio','file_datenum');
 [path,file,ext]=fileparts(FILE);
 
+if isempty(ttl.data) | ~isfield(ttl,'data')
+	classify_trials='s';
+	ttl=[];
+end
+
 [raw,regress,trials]=fluolab_fb_proc(adc,audio,ttl,'blanking',blanking,'normalize',normalize,'dff',dff,'classify_trials',classify_trials,...
 	'channel',channel,'daf_level',daf_level,'trial_cut',trial_cut,'newfs',newfs,'tau',tau,'detrend_win',detrend_win,'detrend_method',detrend_method);
 
