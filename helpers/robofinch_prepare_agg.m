@@ -1,4 +1,4 @@
-function [AGG,DATA_TYPE]=robofinch_add_data(NEW_DATA,NFILES)
+function [AGG,DATA_TYPE]=robofinch_prepare_agg(NEW_DATA,NFILES)
 %
 %
 %

@@ -336,6 +336,7 @@ for i=1:length(uniq_dirs)
 		[hits.locs,hits.features,hits.file_list]=zftftb_template_match(template.features,{curr_batch(idx).name});
 
 		template_files(j)
+	
 		if isempty(hits.locs)
 			continue;
 		end
@@ -343,6 +344,10 @@ for i=1:length(uniq_dirs)
 		[feature_matrix,file_id,peak_order]=zftftb_hits_to_mat(hits);
 
 		% pass the feature_matrix to the clustering algorithm
+
+		if isempty(feature_matrix)
+			continue;
+		end
 
 		labels=class_fun(feature_matrix(:,features_used));
 

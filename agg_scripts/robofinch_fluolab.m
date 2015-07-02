@@ -17,6 +17,9 @@ detrend_win=.3;
 detrend_method='p';
 save_file='robofluolab.mat';
 ylimits=[.2 .7];
+nmads=100;
+win_size=20;
+win_overlap=19;
 
 param_names=who('-regexp','^[a-z]');
 
@@ -62,6 +65,12 @@ for i=1:2:nparams
 			ylimits=varargin{i+1};
 		case 'detrend_method'
 			detrend_method=varargin{i+1};
+		case 'nmads'
+			nmads=varargin{i+1};
+		case 'win_size'
+			win_size=varargin{i+1};
+		case 'win_overlap'
+			win_overlap=varargin{i+1};
 	end
 end
 
@@ -100,7 +109,8 @@ if isempty(ttl.data) | ~isfield(ttl,'data')
 end
 
 [raw,regress,trials]=fluolab_fb_proc(adc,audio,ttl,'blanking',blanking,'normalize',normalize,'dff',dff,'classify_trials',classify_trials,...
-	'channel',channel,'daf_level',daf_level,'trial_cut',trial_cut,'newfs',newfs,'tau',tau,'detrend_win',detrend_win,'detrend_method',detrend_method);
+	'channel',channel,'daf_level',daf_level,'trial_cut',trial_cut,'newfs',newfs,'tau',tau,'detrend_win',detrend_win,'detrend_method',detrend_method,...
+	'nmads',nmads);
 
 if isempty(raw)
 	warning('Fluo analysis could not complete, skipping plotting...');
@@ -118,7 +128,7 @@ end
 %trials.all_class=fluolab_classify_trials(ttl.data,ttl.fs);
 
 fignums=fluolab_fb_plots(audio,raw,ttl,trials,'visible','off','blanking',blanking,'colors',colors,...
-	'ylimits',ylimits,'datenums',file_datenum); %
+	'ylimits',ylimits,'datenums',file_datenum,'win_size',win_size,'win_overlap',win_overlap); %
 fig_names=fieldnames(fignums);
 
 for i=1:length(fig_names)

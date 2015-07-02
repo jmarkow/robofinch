@@ -112,7 +112,7 @@ elseif lower(classify_trials(1))=='s'
 	use_trials=trials.all.other;
 end
 
-if isempty(use_trials)
+if length(use_trials)<3
 	disp('Found no trials skipping...');
 	return;
 end

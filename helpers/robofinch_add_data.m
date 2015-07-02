@@ -40,16 +40,16 @@ for i=1:ntypes
 			end
 
 			if nchannels~=agg_nchannels
-				TO_DEL=1;
 
 				% if we're not blanking or we can't form a channel map, return
 
 				if ~BLANK | ~isfield(AGG.(data_types{i}),'labels')
+					TO_DEL=1;
 					return;
 				end
 			end
 
-			map=zeros(1,agg_nchannels);
+			map=zeros(nchannels,2);
 
 			if isfield(AGG.(data_types{i}),'labels')
 
@@ -67,41 +67,65 @@ for i=1:ntypes
 				
 				% if both have labels, we can form a channel map
 
-
 				ismap=1;
+	
+				for j=1:nlabels
+			
+					idx1=zeros(1,nlabels);
+					idx2=ones(1,nlabels);
+	
+					idx1(curr_type.labels(j)==AGG.(data_types{i}).labels)=1;
 
-				idx1=zeros(1,agg_nlabels);
-				for j=1:agg_nlabels
-					idx1(curr_type.labels==AGG.(data_types{i}).labels(j))=1;
-				end
-
-				if isfield(AGG.(data_types{i}),'ports')
-					if ~isfield(curr_type,'labels')
-						TO_DEL=1;
-						return;
-					else
-						idx2=zeros(1,agg_nlabels);
-						for j=1:agg_nlabels
-							idx2(curr_type.ports==AGG.(data_types{i}).ports(j))=1;
-						end
+					if isfield(AGG.(data_types{i}),'ports') & isfield(curr_type,'ports')
+						idx2(curr_type.ports(j)==AGG.(data_types{i}).ports)=1;
 					end
-				else
-					idx2=ones(1,agg_nlabels);
-				end
 
-				map=find(idx1&idx2);
+					hit=find(idx1&idx2);
+
+					% if hit is empty we've found a novel combination
+
+					if isempty(hit) 
+						map(j,:)=[0 j];
+					else
+						map(j,:)=[hit j];
+					end
+				
+				end
 
 			end
 
 			% if we have a map, use it, otherwise don't
 
 			if ismap
-				for j=1:agg_nchannels
-					if map(j)~=0
-						AGG.(data_types{i}).data(:,IDX,j)=curr_type.data(:,map(j));
+				for j=1:nchannels
+					if map(j,1)~=0
+						AGG.(data_types{i}).data(:,IDX,map(j,1))=curr_type.data(:,map(j,2));
 					else
-						AGG.(data.types{i}).data(:,IDX,j)=nan(agg_nsamples,1);
-						TO_DEL=1;
+
+						% if map(j,1)==0 then we need to expand the data matrix, add labels, etc.
+
+
+
+						AGG.(data_types{i}).data(:,IDX,end+1)=curr_type.data(:,map(j,2));
+						AGG.(data_types{i}).labels(end+1)=curr_type.labels(map(j,2));
+					
+						% sort by labels
+
+						%[val idx]=sort(AGG.(data.types{i}).labels);
+
+						%AGG.(data_types{i}).data=AGG.(data_types{i}).data(:,:,idx);
+						%AGG.(data_types{i}).labels=AGG.(data_types{i}).labels(idx);
+
+						if isfield(curr_type,'ports')
+							AGG.(data_types{i}).ports(end+1)=curr_type.ports(map(j,2));
+							%AGG.(data_types{i}).ports=AGG.(data_types{i}).ports(idx);
+						end
+
+						if isfield(curr_type,'names')
+							AGG.(data_types{i}).names{end+1}=curr_type.names{map(j,2)};
+							%AGG.(data_types{i}).names=AGG.(data_types{i}).names(idx);
+						end
+
 					end
 				end
 			else
