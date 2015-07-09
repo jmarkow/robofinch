@@ -25,7 +25,7 @@ clust_ext='roboextract';
 extract_dir='roboaggregate';
 extract_file='roboaggregate.mat';
 extract_marker='robofinch_aggtrigger';
-script_dir='agg_scripts';
+script_dir='~/Desktop/agg_scripts'; % default agg_script directory, all functions in this dir will be run
 skip='';
 
 % scan for intan_frontend files, prefix songdet1
