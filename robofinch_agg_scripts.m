@@ -62,8 +62,8 @@ tmp=mfilename('fullpath');
 
 tmp=what(fullfile(path,script_dir));
 fun_names={};
-for i=1:length(tmp.m)
-	[path,file,ext]=fileparts(tmp.m{i});
+for i=1:length(tmp)
+	[path,file,ext]=fileparts(tmp{i});
 	fun_names{i}=file;
 end
 
