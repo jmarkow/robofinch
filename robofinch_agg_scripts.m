@@ -57,13 +57,21 @@ recurse_files(2).field='data';
 recurse_files(2).filename=extract_file;
 recurse_files(2).multi=0;
 
-tmp=mfilename('fullpath');
-[path,file,ext]=fileparts(tmp);
-
-tmp=what(fullfile(path,script_dir));
+tmp=what(script_dir);
 fun_names={};
-for i=1:length(tmp)
-	[path,file,ext]=fileparts(tmp{i});
+
+if isempty(tmp)
+	warning('Directory %s not found',script_dir);
+	return;
+end
+
+if length(tmp.m)<1
+	warning('No scripts found in directory %s',script_dir);
+	return;
+end
+
+for i=1:length(tmp.m)
+	[path,file,ext]=fileparts(tmp.m{i});
 	fun_names{i}=file;
 end
 

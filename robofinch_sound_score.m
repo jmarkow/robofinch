@@ -114,6 +114,7 @@ all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,recurse_f
 % which files need to be processed?
 
 to_score=robofinch_to_score({all_files(:).name},score_dir,score_ext);
+
 files_to_score=all_files(to_score==1);
 
 to_exclude=[];
@@ -124,6 +125,7 @@ end
 
 files_to_score(to_exclude)=[];
 to_exclude=[];
+
 
 for i=1:length(files_to_score)
 
@@ -165,11 +167,11 @@ for i=1:length(files_to_score)
 
 end
 
+
 files_to_score(to_exclude)=[];
 params(to_exclude)=[];
 
 if length(files_to_score)>0
-
 	zftftb_batch_features({files_to_score(:).name},'len',cat(1,params(:).len),'overlap',...
 		cat(1,params(:).overlap),'downsampling',cat(1,params(:).downsampling),'filter_scale',cat(1,params(:).filter_scale),...
 		'norm_amp',cat(1,params(:).norm_amp),'song_band',cat(1,params(:).song_band),'audio_load',{params(:).audio_load_fun},'spec_sigma',cat(1,params(:).spec_sigma));
