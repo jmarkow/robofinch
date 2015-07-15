@@ -44,6 +44,8 @@ for i=1:2:nparams
 			recurse_files=varargin{i+1};
 		case 'extract_marker'
 			extract_marker=varargin{i+1};
+		case 'script_dir'
+			script_dir=varargin{i+1};
 		case 'skip'
 			skip=varargin{i+1};
 	end

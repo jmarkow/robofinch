@@ -95,7 +95,7 @@ end
 
 filename_exclude{end+1}=score_ext;
 
-% clusters all files that can be scored
+% cluster all files that can be scored
 
 disp('Collecting files...');
 all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,recurse_files,[],[],[],skip);

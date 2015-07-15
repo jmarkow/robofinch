@@ -109,6 +109,7 @@ end
 % recurse the directory 
 % TODO: prevent recursion in old directories
 
+disp('Collecting files...');
 all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,recurse_files,[],[],[],skip);
 
 % which files need to be processed?
@@ -126,6 +127,7 @@ end
 files_to_score(to_exclude)=[];
 to_exclude=[];
 
+disp('Checking configuration...');
 
 for i=1:length(files_to_score)
 
@@ -167,6 +169,7 @@ for i=1:length(files_to_score)
 
 end
 
+disp('Scoring files...');
 
 files_to_score(to_exclude)=[];
 params(to_exclude)=[];
