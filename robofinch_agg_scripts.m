@@ -1,4 +1,4 @@
-function robofinch_sound_score(DIR,varargin) 
+function robofinch_agg_scripts(DIR,varargin)
 
 if nargin<1 | isempty(DIR), DIR=pwd; end
 

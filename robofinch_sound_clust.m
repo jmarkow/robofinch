@@ -98,15 +98,36 @@ filename_exclude{end+1}=score_ext;
 % cluster all files that can be scored
 
 disp('Collecting files...');
-all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,recurse_files,[],[],[],skip);
+%all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,recurse_files,[],[],[],skip);
+
+temp_files=robofinch_dir_recurse(DIR,template_file,4);
 
 % now split and get the first directory for all files
 
-first_dir=cell(1,length(all_files));
-for i=1:length(all_files)
-	tokens=regexp(all_files(i).name,filesep,'split');
-	ntokens=length(regexp(DIR,filesep,'split')); % first token after DIR
-	first_dir{i}=tokens{ntokens+1};
+first_dir={};
+for i=1:length(temp_files)
+	
+	%tokens=regexp(all_files(i).name,filesep,'split');
+	[pathname,filename,ext]=fileparts(temp_files(i).name);
+	
+	%ntokens=length(regexp(DIR,filesep,'split')); % first token after DIR
+
+	% take two directories above path
+	tokens=regexp(pathname,filesep,'split');
+	use_tokens=tokens(2:end-2);
+
+	if ~strcmp(tokens{end-1},'templates')
+		continue;
+	end
+	
+	new_pathname='';
+
+	for j=1:length(use_tokens)
+		new_pathname=[ new_pathname filesep use_tokens{j} ];
+	end
+
+	first_dir{end+1}=new_pathname;
+
 end
 
 [uniq_dirs,~,uniq_idx]=unique(first_dir);
@@ -115,8 +136,9 @@ for i=1:length(uniq_dirs)
 
 	% where are the templates
 
-	curr_dir=fullfile(DIR,uniq_dirs{i});
-	template_files=robofinch_dir_recurse(curr_dir,template_file,3);
+	curr_dir=uniq_dirs{i}
+
+	template_files=robofinch_dir_recurse(curr_dir,template_file,2);
 
 	for j=1:length(template_files)
 		[pathname,filename,ext]=fileparts(template_files(j).name);
@@ -132,13 +154,15 @@ for i=1:length(uniq_dirs)
 
 	end
 
+	template_files
+
 	if isempty(template_files)
 		continue;
 	end
 
 	% which files have been scored
 
-	dir_files=all_files(uniq_idx==i);
+	dir_files=robofinch_dir_recurse(curr_dir,filename_filter,max_depth,max_date,recurse_files,[],[],[],skip)
 	to_score=robofinch_to_score({dir_files(:).name},score_dir,score_ext);
 	files_to_clust=dir_files(to_score==0);
 
@@ -157,11 +181,10 @@ for i=1:length(uniq_dirs)
 	curr_batch=files_to_clust;
 
 	% non-standard config?
-
-
 	% strip out all files that have been clustered by all templates
 
 	to_clust=zeros(1,length(curr_batch));
+	
 	for j=1:length(curr_batch)
 
 		[pathname,filename,ext]=fileparts(curr_batch(j).name);

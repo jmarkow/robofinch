@@ -64,7 +64,25 @@ for i=1:ntypes
 
 				nlabels=length(curr_type.labels);
 				agg_nlabels=length(AGG.(data_types{i}).labels);
-				
+			
+				if nlabels~=agg_nlabels
+					TO_DEL=1;
+					return;
+				end
+
+				% if there are names, be sure they match
+
+				if isfield(curr_type,'names') & isfield(AGG.(data_types{i}),'names')
+					if length(curr_type.names)==nlabels & length(AGG.(data_types{i}).names)==agg_nlabels
+						for j=1:nlabels
+							if ~strcmpi(curr_type.names{j},AGG.(data_types{i}).names{j})
+								TO_DEL=1;
+								return;
+							end
+						end
+					end
+				end
+
 				% if both have labels, we can form a channel map
 
 				ismap=1;
@@ -72,18 +90,20 @@ for i=1:ntypes
 				for j=1:nlabels
 			
 					idx1=zeros(1,nlabels);
-					idx2=ones(1,nlabels);
+					idx2=zeros(1,nlabels);
 	
 					idx1(curr_type.labels(j)==AGG.(data_types{i}).labels)=1;
 
 					if isfield(AGG.(data_types{i}),'ports') & isfield(curr_type,'ports')
 						idx2(curr_type.ports(j)==AGG.(data_types{i}).ports)=1;
+                    else
+                        idx2=ones(1,nlabels);
 					end
 
 					hit=find(idx1&idx2);
 
 					% if hit is empty we've found a novel combination
-
+                    
 					if isempty(hit) 
 						map(j,:)=[0 j];
 					else
@@ -103,7 +123,6 @@ for i=1:ntypes
 					else
 
 						% if map(j,1)==0 then we need to expand the data matrix, add labels, etc.
-
 
 
 						AGG.(data_types{i}).data(:,IDX,end+1)=curr_type.data(:,map(j,2));

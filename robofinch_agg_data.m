@@ -28,6 +28,8 @@ change_file='robofinch_fileadd';
 extract_marker='robofinch_aggtrigger';
 skip='';
 blanking=1;
+parse_position=1;
+force=0;
 
 % scan for intan_frontend files, prefix songdet1
 
@@ -49,6 +51,10 @@ for i=1:2:nparams
 			skip=varargin{i+1};
 		case 'blanking'
 			blanking=varargin{i+1};
+		case 'parse_position'
+			parse_position=varargin{i+1};
+		case 'force'
+			force=varargin{i+1};
 	end
 end
 
@@ -81,7 +87,7 @@ for i=1:length(uniq_dirs)
 	
 	% if nothing has changed and we already processed, skip...
 
-	if ~exist(fullfile(uniq_dirs{i},'..',change_file),'file') & exist(fullfile(output_dir,extract_file),'file')
+	if ~exist(fullfile(uniq_dirs{i},'..',change_file),'file') & exist(fullfile(output_dir,extract_file),'file') & ~force
 		continue;
 	end
 
@@ -92,10 +98,20 @@ for i=1:length(uniq_dirs)
 
 	template_data=load(curr_batch(1).name);
 	
-	% prepare the aggregated data
+	% prepare the aggregated data 
+	
+	if parse_position
+		[template_data.bout_number,template_data.motif_number,template_data.file_number]=...
+			robofinch_parse_position(curr_batch(1).name);
+	end
+
+	template_data.extract_filename=curr_batch(1).name;
+
+	tmp=regexprep(curr_batch(1).name,'\_roboextract_\d+\.mat$','\.mat');
+	[pathname,filename,ext]=fileparts(tmp);
+	template_data.source_filename=fullfile(pathname,'..','..',[filename ext]);
 
 	[agg,data_type]=robofinch_prepare_agg(template_data,nfiles);	
-
 	to_del=zeros(1,nfiles);
 
 	% map new data to agg data
@@ -114,6 +130,18 @@ for i=1:length(uniq_dirs)
 		% actual data aggregation
 
 		new_data=load(curr_batch(j).name);
+
+		if parse_position
+			[new_data.bout_number,new_data.motif_number,new_data.file_number]=...
+				robofinch_parse_position(curr_batch(j).name);
+		end
+
+		new_data.extract_filename=curr_batch(j).name;
+
+		tmp=regexprep(curr_batch(j).name,'\_roboextract_\d+\.mat$','\.mat');
+		[pathname,filename,ext]=fileparts(tmp);
+		new_data.source_filename=fullfile(pathname,'..','..',[filename ext]);
+       
 		[agg,to_del(j)]=robofinch_add_data(agg,data_type,new_data,j,blanking);
 	end
 

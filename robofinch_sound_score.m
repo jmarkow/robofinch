@@ -19,7 +19,7 @@ max_depth=4; % how many levels of sub-directories to search through
 max_date=inf;
 file_ext='auto'; % automatically determine file type
 filename_filter='songdet1*.mat';
-filename_exclude={'sleep'}; % anything to exclude
+filename_exclude={'sleep','MANUALCLUST'}; % anything to exclude
 
 % sound scoring parameters, for clustering make sure your template uses same parameters
 
