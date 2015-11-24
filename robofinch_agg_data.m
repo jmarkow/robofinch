@@ -1,4 +1,4 @@
-function robofinch_sound_score(DIR,varargin) 
+function robofinch_sound_score(DIR,varargin)
 
 if nargin<1 | isempty(DIR), DIR=pwd; end
 
@@ -30,6 +30,7 @@ skip='';
 blanking=1;
 parse_position=1;
 force=0;
+nonuniform=0;
 
 % scan for intan_frontend files, prefix songdet1
 
@@ -55,6 +56,10 @@ for i=1:2:nparams
 			parse_position=varargin{i+1};
 		case 'force'
 			force=varargin{i+1};
+		case 'nonuniform'
+			nonuniform=varargin{i+1};
+		case 'clust_ext'
+			clust_ext=varargin{i+1};
 	end
 end
 
@@ -80,11 +85,11 @@ end
 for i=1:length(uniq_dirs)
 
 	% within each directory, load the first file, these variables will be used to bootstrap the process
-	
+
 	% load the first file
-	
+
 	output_dir=fullfile(uniq_dirs{i},extract_dir);
-	
+
 	% if nothing has changed and we already processed, skip...
 
 	if ~exist(fullfile(uniq_dirs{i},'..',change_file),'file') & exist(fullfile(output_dir,extract_file),'file') & ~force
@@ -97,9 +102,9 @@ for i=1:length(uniq_dirs)
 	nfiles=length(curr_batch);
 
 	template_data=load(curr_batch(1).name);
-	
-	% prepare the aggregated data 
-	
+
+	% prepare the aggregated data
+
 	if parse_position
 		[template_data.bout_number,template_data.motif_number,template_data.file_number]=...
 			robofinch_parse_position(curr_batch(1).name);
@@ -111,13 +116,13 @@ for i=1:length(uniq_dirs)
 	[pathname,filename,ext]=fileparts(tmp);
 	template_data.source_filename=fullfile(pathname,'..','..',[filename ext]);
 
-	[agg,data_type]=robofinch_prepare_agg(template_data,nfiles);	
+	[agg,data_type]=robofinch_prepare_agg(template_data,nfiles,nonuniform);
 	to_del=zeros(1,nfiles);
 
 	% map new data to agg data
 
 	reverse_string='';
-	
+
 	for j=1:nfiles
 
 		% text progress bar
@@ -141,18 +146,22 @@ for i=1:length(uniq_dirs)
 		tmp=regexprep(curr_batch(j).name,'\_roboextract_\d+\.mat$','\.mat');
 		[pathname,filename,ext]=fileparts(tmp);
 		new_data.source_filename=fullfile(pathname,'..','..',[filename ext]);
-       
-		[agg,to_del(j)]=robofinch_add_data(agg,data_type,new_data,j,blanking);
+
+		if ~nonuniform
+			[agg,to_del(j)]=robofinch_add_data(agg,data_type,new_data,j,blanking);
+		else
+			[agg,to_del(j)]=robofinch_add_data_nonuniform(agg,data_type,new_data,j,blanking);
+		end
 	end
 
 	fprintf('\n');
 	disp([ num2str(sum(to_del)) ' errors']);
-	
+
 	if ~exist(output_dir,'dir')
 		mkdir(output_dir);
 	end
 
-	% now remove the change_file 
+	% now remove the change_file
 
 	if exist(fullfile(uniq_dirs{i},'..',change_file),'file')
 		delete(fullfile(uniq_dirs{i},'..',change_file));
@@ -166,5 +175,3 @@ for i=1:length(uniq_dirs)
 	fclose(fid);
 
 end
-
-

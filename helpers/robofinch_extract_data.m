@@ -37,14 +37,14 @@ for i=1:2:nparams
 	end
 end
 
-% data load works a bit differently, 
-% return structure with all variables to carry 
+% data load works a bit differently,
+% return structure with all variables to carry
 % over to the clustered file
 
 
 
 reverse_string='';
-	
+
 for i=1:length(EXT_PTS)
 
 	y=[];
@@ -56,8 +56,8 @@ for i=1:length(EXT_PTS)
 	reverse_string=repmat(sprintf('\b'),1,length(msg));
 
 	% check for extraction points in each file, if we find some, save to cluster_dir
-	% 
-	
+	%
+
 	[pathname,filename,ext]=fileparts(FILENAMES{i});
 	export_dir=fullfile(pathname,CLUSTER_DIR);
 
@@ -88,7 +88,7 @@ for i=1:length(EXT_PTS)
 	end
 
 	% y is audio data y2 contains a structure with all data variables
-	
+
 
 	% load in audio data
 
@@ -96,7 +96,11 @@ for i=1:length(EXT_PTS)
 
 		case '.wav'
 
-			[y,fs]=wavread(FILENAMES{i});
+			if verLessThan('matlab','8')
+				[y,fs]=wavread(FILENAMES{i});
+			else
+				[y,fs]=audioread(FILENAMES{i});
+			end
 
 		case '.mat'
 
@@ -120,7 +124,7 @@ for i=1:length(EXT_PTS)
 	end
 
 	% form the audio data
-	
+
 	len=length(y);
 
 	% make the full spectrogram, mark extraction points
@@ -128,7 +132,7 @@ for i=1:length(EXT_PTS)
 	if export_spectrogram
 
 		[im_full,f,t_full]=zftftb_pretty_sonogram(y,fs,'len',16.7,'overlap',3.3,'zeropad',0,'filtering',500,'clipping',[-2 2],'norm_amp',1);
-		
+
 		startidx=max([find(f<=disp_band(1))]);
 		stopidx=min([find(f>=disp_band(2))]);
 
@@ -144,7 +148,7 @@ for i=1:length(EXT_PTS)
 	for j=1:size(EXT_PTS{i},1)
 
 		export_file=fullfile([filename '_roboextract_' num2str(filecount)]);
-		
+
 		startpoint=EXT_PTS{i}(j,1);
 		endpoint=EXT_PTS{i}(j,2);
 
@@ -153,13 +157,13 @@ for i=1:length(EXT_PTS)
 		end
 
 		% if we're here, time to extract
-	
+
 		audio.data=y(startpoint:endpoint);
 		audio.fs=fs;
 		audio.t=[1:len]'/fs;
 
 		% now loop through data variables, checking for non-empty data-field
-	
+
 		ext_data=y2;
 
 		if ~isempty(ext_data)
@@ -198,8 +202,11 @@ for i=1:length(EXT_PTS)
 			else
 				tmp=tmp/(max_audio*(1+1e-3));
 			end
-
-			audiowrite(fullfile(export_dir,'wav',[ export_file '.wav' ]),tmp,round(audio.fs));
+			if verLessThan('matlab','8')
+				wavwrite(tmp,round(audio.fs),fullfile(export_dir,'wav',[export_file '.wav']));
+			else
+				audiowrite(fullfile(export_dir,'wav',[ export_file '.wav' ]),tmp,round(audio.fs));
+			end
 		end
 
 		if export_spectrogram
@@ -239,7 +246,7 @@ for i=1:length(EXT_PTS)
 	end
 
 	% write the done signal
-	
+
 	fid=fopen(fullfile(export_dir,[ '.' filename ext]),'w');
 	fclose(fid);
 

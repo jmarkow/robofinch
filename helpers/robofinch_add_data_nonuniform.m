@@ -34,11 +34,6 @@ for i=1:ntypes
 			[nsamples,nchannels]=size(curr_type.data);
 			[agg_nsamples,~,agg_nchannels]=size(AGG.(data_types{i}).data);
 
-			if nsamples~=agg_nsamples
-				TO_DEL=1;
-				return;
-			end
-
 			if nchannels~=agg_nchannels
 
 				% if we're not blanking or we can't form a channel map, return
@@ -116,39 +111,13 @@ for i=1:ntypes
 
 			% if we have a map, use it, otherwise don't
 
-			if ismap
-				for j=1:nchannels
-					if map(j,1)~=0
-						AGG.(data_types{i}).data(:,IDX,map(j,1))=curr_type.data(:,map(j,2));
-					else
+			ismatch=all(map(:,1)==map(:,2));
 
-						% if map(j,1)==0 then we need to expand the data matrix, add labels, etc.
-
-
-						AGG.(data_types{i}).data(:,IDX,end+1)=curr_type.data(:,map(j,2));
-						AGG.(data_types{i}).labels(end+1)=curr_type.labels(map(j,2));
-
-						% sort by labels
-
-						%[val idx]=sort(AGG.(data.types{i}).labels);
-
-						%AGG.(data_types{i}).data=AGG.(data_types{i}).data(:,:,idx);
-						%AGG.(data_types{i}).labels=AGG.(data_types{i}).labels(idx);
-
-						if isfield(curr_type,'ports')
-							AGG.(data_types{i}).ports(end+1)=curr_type.ports(map(j,2));
-							%AGG.(data_types{i}).ports=AGG.(data_types{i}).ports(idx);
-						end
-
-						if isfield(curr_type,'names')
-							AGG.(data_types{i}).names{end+1}=curr_type.names{map(j,2)};
-							%AGG.(data_types{i}).names=AGG.(data_types{i}).names(idx);
-						end
-
-					end
-				end
+			if ismap & ismatch
+				AGG.(data_types{i}).data=[AGG.(data_types{i}).data;curr_type.data];
 			else
-				AGG.(data_types{i}).data(:,IDX,:)=curr_type.data;
+				TO_DEL=1;
+				return;
 			end
 
 		else

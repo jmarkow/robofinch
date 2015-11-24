@@ -1,8 +1,7 @@
-function [AGG,DATA_TYPE]=robofinch_prepare_agg(NEW_DATA,NFILES)
+function [AGG,DATA_TYPE]=robofinch_prepare_agg(NEW_DATA,NFILES,NONUNIFORM)
 %
 %
 %
-
 
 fields=fieldnames(NEW_DATA);
 nfields=length(fields);
@@ -17,7 +16,11 @@ for i=1:nfields
 	if isstruct(curr_type) & isfield(curr_type,'data')
 		[nsamples,nchannels]=size(curr_type.data);
 		AGG.(fields{i})=curr_type;
-		AGG.(fields{i}).data=zeros(nsamples,NFILES,nchannels,'single');
+		if NONUNIFORM
+			AGG.(fields{i}).data=[];
+		else
+			AGG.(fields{i}).data=zeros(nsamples,NFILES,nchannels,'single');
+		end
 		DATA_TYPE(i)=1;
 	elseif isnumeric(curr_type) & length(curr_type)==1
 		AGG.(fields{i})=zeros(1,NFILES);
@@ -28,7 +31,3 @@ for i=1:nfields
 	end
 
 end
-
-
-
-
