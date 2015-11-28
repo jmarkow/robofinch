@@ -1,4 +1,4 @@
-function robofinch_sound_score(DIR,varargin) 
+function robofinch_sound_score(DIR,varargin)
 
 if nargin<1 | isempty(DIR), DIR=pwd; end
 
@@ -33,7 +33,7 @@ template_file='template_data.mat';
 classify_file='classify_data.mat';
 
 score_dir='syllable_data'; %
-score_ext='_score'; % 
+score_ext='_score'; %
 
 parameter_file='robofinch_parameters.txt';
 
@@ -106,10 +106,10 @@ temp_files=robofinch_dir_recurse(DIR,template_file,4);
 
 first_dir={};
 for i=1:length(temp_files)
-	
+
 	%tokens=regexp(all_files(i).name,filesep,'split');
 	[pathname,filename,ext]=fileparts(temp_files(i).name);
-	
+
 	%ntokens=length(regexp(DIR,filesep,'split')); % first token after DIR
 
 	% take two directories above path
@@ -119,7 +119,7 @@ for i=1:length(temp_files)
 	if ~strcmp(tokens{end-1},'templates')
 		continue;
 	end
-	
+
 	new_pathname='';
 
 	for j=1:length(use_tokens)
@@ -184,7 +184,7 @@ for i=1:length(uniq_dirs)
 	% strip out all files that have been clustered by all templates
 
 	to_clust=zeros(1,length(curr_batch));
-	
+
 	for j=1:length(curr_batch)
 
 		[pathname,filename,ext]=fileparts(curr_batch(j).name);
@@ -201,7 +201,7 @@ for i=1:length(uniq_dirs)
 		end
 	end
 
-	clust_idx=find(to_clust);	
+	clust_idx=find(to_clust);
 
 	if isempty(clust_idx)
 		continue;
@@ -239,7 +239,8 @@ for i=1:length(uniq_dirs)
 	for j=1:length(curr_batch)
 
 		% accordingly, don't want to load all soundfiles ntemplate times
-
+		% TODO: check for file integrity, skip and re-compute features if necesssary
+		
 		[pathname,filename,ext]=fileparts(curr_batch(j).name);
 		feature_file=fullfile(pathname,score_dir,[ filename score_ext '.mat' ]);
 		load(feature_file,'parameters');
@@ -264,7 +265,7 @@ for i=1:length(uniq_dirs)
 			percent_complete=100 * (count/total);
 			msg=sprintf('Percent done: %3.1f',percent_complete);
 			fprintf([reverse_string,msg]);
-			reverse_string=repmat(sprintf('\b'),1,length(msg));	
+			reverse_string=repmat(sprintf('\b'),1,length(msg));
 			count=count+1;
 
 			if exist(cluster_signal,'file')
@@ -295,7 +296,7 @@ for i=1:length(uniq_dirs)
 
 			% check sampling rates
 
-			if ~feature_match 
+			if ~feature_match
 
 				% print done signal so we don't check again
 
@@ -359,7 +360,7 @@ for i=1:length(uniq_dirs)
 		[hits.locs,hits.features,hits.file_list]=zftftb_template_match(template.features,{curr_batch(idx).name});
 
 		template_files(j)
-	
+
 		if isempty(hits.locs)
 			continue;
 		end
@@ -395,4 +396,3 @@ for i=1:length(uniq_dirs)
 	robofinch_mark_dirs(curr_batch,template_files,to_clust,change_file);
 
 end
-
