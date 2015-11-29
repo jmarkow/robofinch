@@ -240,10 +240,23 @@ for i=1:length(uniq_dirs)
 
 		% accordingly, don't want to load all soundfiles ntemplate times
 		% TODO: check for file integrity, skip and re-compute features if necesssary
-		
+
 		[pathname,filename,ext]=fileparts(curr_batch(j).name);
 		feature_file=fullfile(pathname,score_dir,[ filename score_ext '.mat' ]);
-		load(feature_file,'parameters');
+
+		try
+			load(feature_file,'parameters');
+			load_status=0;
+		catch
+
+			load_status=1;
+			warning('Error loading file %s', feature_file);
+			continue;
+
+			% TODO: delete or add done signal??
+
+		end
+
 		curr_batch_parameters(j)=parameters;
 		feature_names=fieldnames(parameters);
 
