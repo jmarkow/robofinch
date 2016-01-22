@@ -1,4 +1,4 @@
-function robofinch_sound_score(DIR,varargin) 
+function robofinch_sound_score(DIR,varargin)
 
 if nargin<1 | isempty(DIR), DIR=pwd; end
 
@@ -37,7 +37,7 @@ export_wav=1;
 template_file='template_data.mat';
 classify_file='classify_data.mat';
 score_dir='syllable_data'; %
-score_ext='_score'; % 
+score_ext='_score'; %
 
 recurse_files(1).field='config';
 recurse_files(1).filename='robofinch_parameters.txt';
@@ -106,7 +106,7 @@ end
 
 %template_listing=robofinch_get_templates(listing{i},template_file,classify_file);
 
-% recurse the directory 
+% recurse the directory
 % TODO: prevent recursion in old directories
 
 disp('Collecting files...');
@@ -162,7 +162,7 @@ for i=1:length(files_to_score)
 
 		end
 	end
-	
+
 	params(i)=new_params;
 
 	% score the file
@@ -170,6 +170,10 @@ for i=1:length(files_to_score)
 end
 
 disp('Scoring files...');
+
+if isempty(files_to_score)
+	return;
+end
 
 files_to_score(to_exclude)=[];
 params(to_exclude)=[];
