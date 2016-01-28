@@ -1,5 +1,3 @@
-# Welcome (i.e. what does this do?)
+# robofinch [[![Documentation Status](https://readthedocs.org/projects/robofinch/badge/?version=latest)](http://robofinch.readthedocs.org/en/latest/?badge=latest)
 
-This is a MATLAB toolbox for automating common tasks in a data analysis pipeline.
-
-Detailed documentation lives on readthedocs.org, [here](http://robofinch.readthedocs.org/en/latest/).
+This is a library for automating typical tasks used in running a data acquisition/analysis pipeline in Timothy Gardner's lab. 
