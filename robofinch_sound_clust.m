@@ -136,7 +136,7 @@ for i=1:length(uniq_dirs)
 
 	% where are the templates
 
-	curr_dir=uniq_dirs{i}
+	curr_dir=uniq_dirs{i};
 
 	template_files=robofinch_dir_recurse(curr_dir,template_file,2);
 
@@ -153,8 +153,6 @@ for i=1:length(uniq_dirs)
 		end
 
 	end
-
-	template_files
 
 	if isempty(template_files)
 		continue;
