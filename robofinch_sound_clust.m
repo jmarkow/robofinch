@@ -160,7 +160,7 @@ for i=1:length(uniq_dirs)
 
 	% which files have been scored
 
-	dir_files=robofinch_dir_recurse(curr_dir,filename_filter,max_depth,max_date,recurse_files,[],[],[],skip)
+	dir_files=robofinch_dir_recurse(curr_dir,filename_filter,max_depth,max_date,recurse_files,[],[],[],skip);
 	to_score=robofinch_to_score({dir_files(:).name},score_dir,score_ext);
 	files_to_clust=dir_files(to_score==0);
 
