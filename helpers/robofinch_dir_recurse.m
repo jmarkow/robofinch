@@ -70,12 +70,19 @@ end
 % recurse if we find a directory
 
 for i=1:length(raw_listing)
-
+    
+    skip_flag=false;
 	if ~isempty(SKIP)
-		if any(strcmp(SKIP,raw_listing(i).name))
-			continue
-		end
-	end
+        for j=1:length(SKIP)
+            if ~isempty(strfind(raw_listing(i).name,SKIP{j}))
+                skip_flag=true;
+            end
+        end
+    end
+    
+    if skip_flag
+        continue;
+    end
 
 	if raw_listing(i).name(1)~='.' & raw_listing(i).isdir & ((daysdif(raw_listing(i).datenum,now))<MAXDATE)
 		FILES=robofinch_dir_recurse(fullfile(DIR,raw_listing(i).name),FILTER,MAXDEPTH,MAXDATE,TAG_NAME,TAG_FILE,FILES,DEPTH,SKIP);
