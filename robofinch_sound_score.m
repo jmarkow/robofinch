@@ -109,13 +109,16 @@ end
 % recurse the directory
 % TODO: prevent recursion in old directories
 
-disp('Collecting files...');
+fprintf('%s%s%s\n',repmat('=',[1 20]),'robofinch_sound_score',repmat('=',[1 20]));
+fprintf('Collecting files...\n');
+
 all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,recurse_files,[],[],[],skip);
 
 % which files need to be processed?
 
-to_score=robofinch_to_score({all_files(:).name},score_dir,score_ext);
+fprintf('Checking for files to score...\n');
 
+to_score=robofinch_to_score({all_files(:).name},score_dir,score_ext);
 files_to_score=all_files(to_score==1);
 
 to_exclude=[];
@@ -127,7 +130,9 @@ end
 files_to_score(to_exclude)=[];
 to_exclude=[];
 
-disp('Checking configuration...');
+fprintf('%g files to score\n',length(files_to_score));
+
+fprintf('Checking file configuration...\n');
 
 for i=1:length(files_to_score)
 
@@ -169,11 +174,12 @@ for i=1:length(files_to_score)
 
 end
 
-disp('Scoring files...');
 
 if isempty(files_to_score)
 	return;
 end
+
+fprintf('Scoring %g files...\n',length(files_to_score));
 
 files_to_score(to_exclude)=[];
 params(to_exclude)=[];

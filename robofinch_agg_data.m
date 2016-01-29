@@ -63,6 +63,8 @@ for i=1:2:nparams
 	end
 end
 
+fprintf('%s%s%s\n',repmat('=',[1 20]),'robofinch_agg_data',repmat('=',[1 23]));
+
 filename_filter=[ '*' clust_ext '*.mat' ];
 
 % cluster all files that can be scored
@@ -82,6 +84,8 @@ end
 
 [uniq_dirs,~,uniq_idx]=unique(first_dir);
 
+fprintf('%g potential directories to aggregate\n',length(uniq_dirs));
+
 for i=1:length(uniq_dirs)
 
 	% within each directory, load the first file, these variables will be used to bootstrap the process
@@ -96,7 +100,7 @@ for i=1:length(uniq_dirs)
 		continue;
 	end
 
-	disp(['Aggregating directory:  ' uniq_dirs{i}]);
+	fprintf('Aggregating directory:  %s\n',uniq_dirs{i});
 
 	curr_batch=all_files(uniq_idx==i);
 	nfiles=length(curr_batch);
@@ -106,6 +110,8 @@ for i=1:length(uniq_dirs)
 	% prepare the aggregated data
 
 	if parse_position
+
+		fprintf('Parsing motif positions...\n');
 		[template_data.bout_number,template_data.motif_number,template_data.file_number]=...
 			robofinch_parse_position(curr_batch(1).name);
 	end
@@ -121,6 +127,7 @@ for i=1:length(uniq_dirs)
 
 	% map new data to agg data
 
+	fprintf('Mapping data...\n');
 	reverse_string='';
 
 	for j=1:nfiles

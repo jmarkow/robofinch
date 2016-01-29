@@ -50,7 +50,7 @@ for i=1:2:nparams
 			skip=varargin{i+1};
 	end
 end
-
+fprintf('%s%s%s\n',repmat('=',[1 20]),'robofinch_agg_scripts',repmat('=',[1 20]));
 recurse_files(1).field='config';
 recurse_files(1).filename=parameter_file;
 recurse_files(1).multi=1;
@@ -75,14 +75,20 @@ end
 for i=1:length(tmp.m)
 	[path,file,ext]=fileparts(tmp.m{i});
 	fun_names{i}=file;
+	fprintf('Found function %s....\n',fun_names{i});
+	if isempty(which(fun_names{i}))
+		warning('...function not in MATLAB path, you are likely to encounter errors');
+	end
 end
 
 % clusters all files that can be scored
 
-disp('Collecting files...');
+fprintf('Collecting files...\n');
 all_files=robofinch_dir_recurse(DIR,extract_marker,max_depth,max_date,recurse_files,[],[],[],skip);
 
 % load parameters and run all scripts on aggregated data
+
+fprintf('Found %g script triggers\n',length(all_files));
 
 for i=1:length(all_files)
 
@@ -94,10 +100,7 @@ for i=1:length(all_files)
 	end
 
 	% delete the trigger file, move on...
-	
+
 	delete([all_files(i).name]);
 
 end
-
-
-

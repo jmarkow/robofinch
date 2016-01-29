@@ -39,7 +39,7 @@ parameter_file='robofinch_parameters.txt';
 
 recurse_files(1).field='config';
 recurse_files(1).filename=parameter_file;
-recurse_files(1).multi=0;
+recurse_files(1).multi=1;
 
 audio_load='';
 data_load='';
@@ -97,7 +97,9 @@ filename_exclude{end+1}=score_ext;
 
 % cluster all files that can be scored
 
-disp('Collecting files...');
+fprintf('%s%s%s\n',repmat('=',[1 20]),'robofinch_sound_clust',repmat('=',[1 20]));
+fprintf('Collecting templates...\n');
+
 %all_files=robofinch_dir_recurse(DIR,filename_filter,max_depth,max_date,recurse_files,[],[],[],skip);
 
 temp_files=robofinch_dir_recurse(DIR,template_file,4);
@@ -139,6 +141,7 @@ for i=1:length(uniq_dirs)
 	curr_dir=uniq_dirs{i};
 
 	template_files=robofinch_dir_recurse(curr_dir,template_file,2);
+	to_del=[];
 
 	for j=1:length(template_files)
 		[pathname,filename,ext]=fileparts(template_files(j).name);
@@ -152,13 +155,24 @@ for i=1:length(uniq_dirs)
 			template_files(j).parameter_file='';
 		end
 
+		if ~exist(template_files(j).classify_file,'file')
+			fprintf('Classify file not found for %s, skipping...\n',template_files(j).name);
+			to_del=[to_del j];
+			continue;
+		end
+
+		fprintf('Found template %s\n',template_files(j).name);
 	end
+
+	template_files(to_del)=[];
 
 	if isempty(template_files)
 		continue;
 	end
 
 	% which files have been scored
+
+	fprintf('Checking for files to cluster...\n');
 
 	dir_files=robofinch_dir_recurse(curr_dir,filename_filter,max_depth,max_date,recurse_files,[],[],[],skip);
 	to_score=robofinch_to_score({dir_files(:).name},score_dir,score_ext);
@@ -201,6 +215,8 @@ for i=1:length(uniq_dirs)
 
 	clust_idx=find(to_clust);
 
+	fprintf('%g files to cluster\n',length(clust_idx));
+	
 	if isempty(clust_idx)
 		continue;
 	end
@@ -329,18 +345,84 @@ for i=1:length(uniq_dirs)
 		continue;
 	end
 
-	disp('Clustering...');
 	for j=1:length(template_files)
 
 		% find sound files to score with this template file
+
+		fprintf('Clustering files for template %s\n',template_files(j).name)
 
 		load(template_files(j).name,'template');
 		load(template_files(j).classify_file,'class_fun','cluster_choice','features_used');
 
 		% if we find any parameters in the template directory, *they override other parameters*
-		% TODO: allow for default parameters, as long as they're common to all files
-		
+
+		template_size=length(template.data);
+		idx=to_clust(find(to_clust(:,2)==j),1);
+
+		[hits.locs,hits.features,hits.file_list]=zftftb_template_match(template.features,{curr_batch(idx).name});
+
+		% if a parameter file is common to everyone, it should be present on the first file at the first level,
+		% and should be shared among all other files
+
+		if isempty(hits.locs)
+			continue;
+		end
+
+		[feature_matrix,file_id,peak_order]=zftftb_hits_to_mat(hits);
+
+		% pass the feature_matrix to the clustering algorithm
+
+		if isempty(feature_matrix)
+			continue;
+		end
+
+		labels=class_fun(feature_matrix(:,features_used));
+
+		% find where labels==selection, add the extraction points, be done with this...
+
+		% check for base parameter file
+
+
+		first_file=curr_batch(1).config;
+		if iscell(first_file) & ~isempty(first_file)
+			first_file=first_file{1};
+		end
+
+		idx=zeros(length(curr_batch),1);
+
+		for k=1:length(curr_batch)
+			idx(k)=any(~cellfun(@isempty,strfind(curr_batch(k).config,first_file)));
+		end
+
 		new_params=default_params;
+
+		if all(idx)
+			fprintf('Found base parameter file %s\n',first_file);
+
+			% first get parameters from base parameter file, then overwrite with template parameters
+
+			tmp=robofinch_read_config(first_file);
+			new_param_names=fieldnames(tmp);
+
+			% assign field names to variables
+
+			for k=1:length(new_param_names)
+				if any(strcmp(param_names,new_param_names{k}))
+					disp(['Setting parameter ' new_param_names{k} ':  ' num2str(tmp.(new_param_names{k})) ]);
+					new_params.(new_param_names{k})=tmp.(new_param_names{k});
+				end
+			end
+
+			if isfield(new_params,'audio_load')
+				new_params.audio_load_fun=eval([new_params.audio_load]);
+			end
+
+			if isfield(new_params,'data_load')
+				new_params.data_load_fun=eval([new_params.data_load]);
+			end
+
+		end
+
 
 		if ~isempty(template_files(j).parameter_file)
 
@@ -366,34 +448,15 @@ for i=1:length(uniq_dirs)
 
 		end
 
-		template_size=length(template.data);
-		idx=to_clust(find(to_clust(:,2)==j),1);
-
-		[hits.locs,hits.features,hits.file_list]=zftftb_template_match(template.features,{curr_batch(idx).name});
-
-		template_files(j)
-
-		if isempty(hits.locs)
-			continue;
-		end
-
-		[feature_matrix,file_id,peak_order]=zftftb_hits_to_mat(hits);
-
-		% pass the feature_matrix to the clustering algorithm
-
-		if isempty(feature_matrix)
-			continue;
-		end
-
-		labels=class_fun(feature_matrix(:,features_used));
-
-		% find where labels==selection, add the extraction points, be done with this...
+		nhits=sum(labels==cluster_choice);
+		fprintf('Preparing %g hits\n',nhits);
 
 		hits.ext_pts=zftftb_add_extractions(hits,labels,cluster_choice,file_id,peak_order,template.fs,template_size,...
 			'padding',new_params.padding,'downsampling',cat(1,curr_batch_parameters(idx).downsampling),...
 			'len',cat(1,curr_batch_parameters(idx).len),'overlap',cat(1,curr_batch_parameters(idx).overlap));
 
 		% extract the hits, write done signals
+		fprintf('Extracting hits\n');
 
 		robofinch_extract_data(hits.ext_pts,hits.file_list,template_files(j).cluster_dir,'audio_load',new_params.audio_load_fun,'data_load',new_params.data_load_fun);
 
