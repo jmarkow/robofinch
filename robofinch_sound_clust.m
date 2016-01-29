@@ -338,7 +338,8 @@ for i=1:length(uniq_dirs)
 		load(template_files(j).classify_file,'class_fun','cluster_choice','features_used');
 
 		% if we find any parameters in the template directory, *they override other parameters*
-
+		% TODO: allow for default parameters, as long as they're common to all files
+		
 		new_params=default_params;
 
 		if ~isempty(template_files(j).parameter_file)

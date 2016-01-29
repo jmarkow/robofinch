@@ -6,7 +6,7 @@ robofinch was intended to be used with other libraries, most prominently `zftftb
 How options/parameters are handled
 ----------------------------------
 
-Because many of these scripts are intended to run without user intervention, parameters are stored in text files.  All ``robofinch`` functions read special text files in the directories you want to process.  For instance, say ``/Volumes/my_great_folder_of_data/`` contains data from 4 birds ``LHP57``, ``RB15``, ``LG720RBLK`` and ``RM10``.  You may want a default set of parameters for all birds, you would place a text file with the default options in ``/Volumes/my_great_folder_of_data/``.  What if you want parameter B to be different for ``LHP57``?  Simply place another text file with the setting for parameter B in ``/Volumes/my_great_folder_of_data/LHP57``.  The options files are scanned hierarchically, and are read from first to last.  
+Because many of these scripts are intended to run without user intervention, parameters are stored in text files.  All robofinch functions read special text files in the directories you want to process.  For instance, say ``/Volumes/my_great_folder_of_data/`` contains data from 4 birds ``LHP57``, ``RB15``, ``LG720RBLK`` and ``RM10``.  You may want a default set of parameters for all birds, you would place a text file with the default options in ``/Volumes/my_great_folder_of_data/``.  What if you want parameter B to be different for ``LHP57``?  Simply place another text file with the setting for parameter B in ``/Volumes/my_great_folder_of_data/LHP57``.  The options files are scanned hierarchically, and are read from first to last.  
 
 Setting parameters
 ^^^^^^^^^^^^^^^^^^
@@ -19,7 +19,6 @@ Parameters required for all robofinch functions
 
 audio_load
 data_load
-
 
 
 Computing sound features 
