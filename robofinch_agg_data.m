@@ -15,7 +15,7 @@ if mod(nparams,2)>0
 	error('Parameters must be specified as parameter/value pairs');
 end
 
-max_depth=7; % how many levels of sub-directories to search through
+max_depth=0; % how many levels of sub-directories to search through
 max_date=inf;
 
 % sound scoring parameters, make sure these match your template
@@ -31,6 +31,8 @@ blanking=1;
 parse_position=1;
 force=0;
 nonuniform=0;
+segments=1;
+custom_load=[];
 
 % scan for intan_frontend files, prefix songdet1
 
@@ -60,6 +62,10 @@ for i=1:2:nparams
 			nonuniform=varargin{i+1};
 		case 'clust_ext'
 			clust_ext=varargin{i+1};
+    case 'segments'
+      segments=varargin{i+1};
+		case 'custom_load'
+			custom_load=varargin{i+1};
 	end
 end
 
@@ -105,16 +111,19 @@ for i=1:length(uniq_dirs)
 	curr_batch=all_files(uniq_idx==i);
 	nfiles=length(curr_batch);
 
-	template_data=load(curr_batch(1).name);
-
+	if isempty(custom_load)
+		template_data=load(curr_batch(1).name);
+	else
+		template_data=custom_load(curr_batch(1).name);
+	end
 	% prepare the aggregated data
 
 	if parse_position
 
 		fprintf('Parsing motif positions...\n');
 		[template_data.bout_number,template_data.motif_number,template_data.file_number]=...
-			robofinch_parse_position(curr_batch(1).name);
-	end
+		robofinch_parse_position(curr_batch(1).name);
+    end
 
 	template_data.extract_filename=curr_batch(1).name;
 
@@ -122,63 +131,88 @@ for i=1:length(uniq_dirs)
 	[pathname,filename,ext]=fileparts(tmp);
 	template_data.source_filename=fullfile(pathname,'..','..',[filename ext]);
 
-	[agg,data_type]=robofinch_prepare_agg(template_data,nfiles,nonuniform);
-	to_del=zeros(1,nfiles);
 
 	% map new data to agg data
 
-	fprintf('Mapping data...\n');
+	segments=min(nfiles,segments);
+
+	fprintf('Mapping data with %g split(s)...\n',segments);
 	reverse_string='';
 
-	for j=1:nfiles
+	splits=unique([0:ceil(nfiles/segments):nfiles nfiles]);
 
-		% text progress bar
+	for j=1:length(splits)-1
 
-		percent_complete=100 * (j/nfiles);
-		msg=sprintf('Percent done: %3.1f',percent_complete);
-		fprintf([reverse_string,msg]);
-		reverse_string=repmat(sprintf('\b'),1,length(msg));
+		nfiles_split=length(splits(j)+1:splits(j+1));
 
-		% actual data aggregation
+		[agg,data_type]=robofinch_prepare_agg(template_data,nfiles_split,nonuniform);
+		to_del=zeros(1,nfiles);
 
-		new_data=load(curr_batch(j).name);
+		for k=splits(j)+1:splits(j+1)
 
-		if parse_position
-			[new_data.bout_number,new_data.motif_number,new_data.file_number]=...
-				robofinch_parse_position(curr_batch(j).name);
+
+			% text progress bar
+
+			percent_complete=100 * ((k-splits(j))/nfiles_split);
+			msg=sprintf('Percent done: %3.1f',percent_complete);
+			fprintf([reverse_string,msg]);
+			reverse_string=repmat(sprintf('\b'),1,length(msg));
+
+			% actual data aggregation
+
+			if isempty(custom_load)
+				new_data=load(curr_batch(k).name);
+			else
+				new_data=custom_load(curr_batch(k).name);
+			end
+
+			if parse_position
+				[new_data.bout_number,new_data.motif_number,new_data.file_number]=...
+				robofinch_parse_position(curr_batch(k).name);
+			end
+
+			new_data.extract_filename=curr_batch(k).name;
+
+			tmp=regexprep(curr_batch(k).name,'\_roboextract_\d+\.mat$','\.mat');
+			[pathname,filename,ext]=fileparts(tmp);
+			new_data.source_filename=fullfile(pathname,'..','..',[filename ext]);
+
+			if ~nonuniform
+				[agg,to_del(k)]=robofinch_add_data(agg,data_type,new_data,k-splits(j),blanking);
+			else
+				[agg,to_del(k)]=robofinch_add_data_nonuniform(agg,data_type,new_data,k-splits(j),blanking);
+			end
+
+			if length(splits)>2
+				% enumerate output directory if we have multiple splits
+				use_output_dir=[output_dir '_' sprintf('%04g',j) ];
+			else
+				use_output_dir=output_dir;
+			end
+
+
 		end
 
-		new_data.extract_filename=curr_batch(j).name;
-
-		tmp=regexprep(curr_batch(j).name,'\_roboextract_\d+\.mat$','\.mat');
-		[pathname,filename,ext]=fileparts(tmp);
-		new_data.source_filename=fullfile(pathname,'..','..',[filename ext]);
-
-		if ~nonuniform
-			[agg,to_del(j)]=robofinch_add_data(agg,data_type,new_data,j,blanking);
-		else
-			[agg,to_del(j)]=robofinch_add_data_nonuniform(agg,data_type,new_data,j,blanking);
+		if ~exist(use_output_dir,'dir')
+			mkdir(use_output_dir);
 		end
-	end
 
-	fprintf('\n');
-	disp([ num2str(sum(to_del)) ' errors']);
+		save(fullfile(use_output_dir,extract_file),'-struct','agg','-v7.3');
 
-	if ~exist(output_dir,'dir')
-		mkdir(output_dir);
+		% trigger analysis scripts
+
+		fid=fopen(fullfile(use_output_dir,extract_marker),'w');
+		fclose(fid);
+
 	end
 
 	% now remove the change_file
 
+	fprintf('\n');
+	disp([ num2str(sum(to_del)) ' errors']);
+
 	if exist(fullfile(uniq_dirs{i},'..',change_file),'file')
 		delete(fullfile(uniq_dirs{i},'..',change_file));
 	end
-
-	save(fullfile(output_dir,extract_file),'-struct','agg','-v7.3');
-
-	% trigger analysis scripts
-
-	fid=fopen(fullfile(output_dir,extract_marker),'w');
-	fclose(fid);
 
 end
