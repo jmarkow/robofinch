@@ -31,6 +31,8 @@ blanking=1;
 parse_position=1;
 force=0;
 nonuniform=0;
+splits=[];
+ephys_channel=[];
 
 % scan for intan_frontend files, prefix songdet1
 
@@ -60,6 +62,10 @@ for i=1:2:nparams
 			nonuniform=varargin{i+1};
 		case 'clust_ext'
 			clust_ext=varargin{i+1};
+		case 'ephys_channel'
+			ephys_channel=varargin{i+1};
+		case 'splits'
+			splits=varargin{i+1};
 	end
 end
 
