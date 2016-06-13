@@ -216,7 +216,7 @@ for i=1:length(uniq_dirs)
 	clust_idx=find(to_clust);
 
 	fprintf('%g files to cluster\n',length(clust_idx));
-	
+
 	if isempty(clust_idx)
 		continue;
 	end
@@ -391,7 +391,11 @@ for i=1:length(uniq_dirs)
 		idx=zeros(length(curr_batch),1);
 
 		for k=1:length(curr_batch)
-			idx(k)=any(~cellfun(@isempty,strfind(curr_batch(k).config,first_file)));
+			if iscell(curr_batch(k).config)
+				idx(k)=any(~cellfun(@isempty,strfind(curr_batch(k).config,first_file)));
+			else
+				idx(k)=~isempty(strfind(curr_batch(k).config,first_file));
+			end
 		end
 
 		new_params=default_params;

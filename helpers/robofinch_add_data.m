@@ -94,7 +94,8 @@ for i=1:ntypes
 
 					idx1(curr_type.labels(j)==AGG.(data_types{i}).labels)=1;
 
-					if isfield(AGG.(data_types{i}),'ports') & isfield(curr_type,'ports')
+					if isfield(AGG.(data_types{i}),'ports') & isfield(curr_type,'ports') ...
+						& length(AGG.(data_types{i}).ports==length(curr_type.ports)==nlabels) 
 						idx2(curr_type.ports(j)==AGG.(data_types{i}).ports)=1;
 					else
 						idx2=ones(1,nlabels);
