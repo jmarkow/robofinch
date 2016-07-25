@@ -62,6 +62,8 @@ for i=1:2:nparams
 			nonuniform=varargin{i+1};
 		case 'clust_ext'
 			clust_ext=varargin{i+1};
+		case 'splits'
+			splits=varargin{i+1};
     case 'segments'
       segments=varargin{i+1};
 		case 'custom_load'
