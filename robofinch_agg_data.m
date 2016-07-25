@@ -21,14 +21,14 @@ max_date=inf;
 % sound scoring parameters, make sure these match your template
 
 parameter_file='robofinch_parameters.txt';
-clust_ext='roboextract';
+clust_ext='';
 extract_dir='roboaggregate';
 extract_file='roboaggregate.mat';
 change_file='robofinch_fileadd';
 extract_marker='robofinch_aggtrigger';
 skip='';
 blanking=1;
-parse_position=1;
+parse_position=0;
 force=0;
 nonuniform=0;
 segments=1;
@@ -179,7 +179,7 @@ for i=1:length(uniq_dirs)
 
 			if ~nonuniform
 				[agg,to_del(k)]=robofinch_add_data(agg,data_type,new_data,k-splits(j),blanking);
-			else
+            else
 				[agg,to_del(k)]=robofinch_add_data_nonuniform(agg,data_type,new_data,k-splits(j),blanking);
 			end
 
