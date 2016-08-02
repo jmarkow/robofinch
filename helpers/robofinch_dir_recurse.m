@@ -33,8 +33,8 @@ if ~isempty(TAG_NAME)
 	end
 
 	for i=1:length(raw_listing)
-		for j=1:length(TAG_NAME)
-			if strcmp(raw_listing(i).name,TAG_NAME(j).filename) 
+		for j=1:length(TAG_NAME) 
+			if ~isempty(regexp(raw_listing(i).name,TAG_NAME(j).filename,'once'))
 				if TAG_NAME(j).multi
 					if ~isempty(TAG_FILE{j})
 						TAG_FILE{j}{end+1}=fullfile(DIR,raw_listing(i).name);
