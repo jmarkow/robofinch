@@ -33,7 +33,7 @@ for i=1:ntypes
 
 			[nsamples,nchannels]=size(curr_type.data);
 			[agg_nsamples,~,agg_nchannels]=size(AGG.(data_types{i}).data);
-
+            
 			if nchannels~=agg_nchannels
 
 				% if we're not blanking or we can't form a channel map, return
@@ -45,7 +45,7 @@ for i=1:ntypes
 			end
 
 			map=zeros(nchannels,2);
-
+            
 			if isfield(AGG.(data_types{i}),'labels')
 
 				% make sure labels match if they exist
@@ -111,11 +111,15 @@ for i=1:ntypes
 
 			% if we have a map, use it, otherwise don't
 
-			ismatch=all(map(:,1)==map(:,2));
-
-			if ismap & ismatch
+            ismatch=all(map(:,1)==map(:,2));
+            
+            % audio is an exception, presumably one channel (crossed
+            % fingers)
+            
+			if (ismap & ismatch) | strcmp(data_types{i},'audio')
 				AGG.(data_types{i}).data=[AGG.(data_types{i}).data;curr_type.data];
-			else
+            else
+                disp('crah')
 				TO_DEL=1;
 				return;
 			end
